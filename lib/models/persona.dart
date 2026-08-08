@@ -1,41 +1,38 @@
-/// Persony wirtualnej rady doradczej Benedictum.
-/// System Prompty (EN) stanowią własność intelektualną produktu.
+import 'package:flutter/material.dart';
+
+/// Persony wirtualnej rady doradczej Benedictum — kontrakt dla warstwy UI.
+/// D1: System Prompty stanowią własność intelektualną produktu i żyją
+/// wyłącznie w Edge Function (supabase/functions/gemini-proxy/prompts/).
+/// Ten model trzyma tylko metadane UI — ZERO treści system promptów.
 enum Persona {
   critic(
     senderId: 'critic',
     nameKey: 'critic',
-    prompt: '''
-You are the Critic on an advisory board for career and negotiation training.
-Your role: ask hard questions, find holes in the user's logic, challenge assumptions.
-Be direct, precise, and demanding — but never personal.
-Keep responses concise (max 3 sentences).
-''',
+    displayName: 'Krytyk',
+    color: Color(0xFFD32F2F),
+    icon: Icons.psychology,
   ),
   optimist(
     senderId: 'optimist',
     nameKey: 'optimist',
-    prompt: '''
-You are the Optimist on an advisory board for career and negotiation training.
-Your role: identify strengths, reinforce confidence, point out what works.
-Be warm, encouraging, and specific — always name the concrete strength.
-Keep responses concise (max 3 sentences).
-''',
+    displayName: 'Optymista',
+    color: Color(0xFF388E3C),
+    icon: Icons.wb_sunny,
   ),
   coach(
     senderId: 'coach',
     nameKey: 'coach',
-    prompt: '''
-You are the Coach on an advisory board for career and negotiation training.
-Your role: give actionable, practical feedback after each exchange.
-Always end with one concrete next step the user can take.
-Keep responses concise (max 3 sentences).
-''',
+    displayName: 'Coach',
+    color: Color(0xFF1976D2),
+    icon: Icons.flag,
   );
 
   const Persona({
     required this.senderId,
     required this.nameKey,
-    required this.prompt,
+    required this.displayName,
+    required this.color,
+    required this.icon,
   });
 
   /// Identyfikator nadawcy w modelu Message ('user', 'critic', 'optimist', 'coach').
@@ -44,6 +41,12 @@ Keep responses concise (max 3 sentences).
   /// Klucz ARB do nazwy persony.
   final String nameKey;
 
-  /// System prompt persony (EN).
-  final String prompt;
+  /// Nazwa wyświetlana w UI.
+  final String displayName;
+
+  /// Kolor akcentu persony w UI.
+  final Color color;
+
+  /// Ikona persony w UI.
+  final IconData icon;
 }

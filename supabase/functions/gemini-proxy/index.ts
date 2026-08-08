@@ -7,22 +7,8 @@
 //  - GEMINI_API_KEY wyłącznie z Supabase Secrets — NIGDY w kodzie ani w repo.
 //  - Komunikaty błędów sanityzowane: bez kluczy API, tokenów JWT, ścieżek wewnętrznych.
 import { createClient } from "jsr:@supabase/supabase-js@2";
-// Persony rady doradczej. System prompty (EN) — własność intelektualna produktu.
-// Persona: { senderId, systemPrompt }.
-const PERSONAS = [
-  {
-    senderId: "critic",
-    systemPrompt: "You are the Critic on an advisory board for career and negotiation training. " + "Your role: ask hard questions, find holes in the user's logic, challenge assumptions. " + "Be direct, precise, and demanding — but never personal. Keep responses concise (max 3 sentences)."
-  },
-  {
-    senderId: "optimist",
-    systemPrompt: "You are the Optimist on an advisory board for career and negotiation training. " + "Your role: identify strengths, reinforce confidence, point out what works. " + "Be warm, encouraging, and specific — always name the concrete strength. " + "Keep responses concise (max 3 sentences)."
-  },
-  {
-    senderId: "coach",
-    systemPrompt: "You are the Coach on an advisory board for career and negotiation training. " + "Your role: give actionable, practical feedback after each exchange. " + "Always end with one concrete next step the user can take. " + "Keep responses concise (max 3 sentences)."
-  }
-];
+// Source of truth promptów (D1): prompts/ — klient nie przechowuje treści promptów.
+import { PERSONAS, renderSystemPrompt } from "./prompts/index.ts";
 const CORS_ORIGINS = (()=>{
   // Domyślnie tylko lokalny dev web (flutter run -d chrome).
   const raw = Deno.env.get("CORS_ORIGINS") ?? "http://localhost:8899,http://localhost:3000";
@@ -60,11 +46,13 @@ function safeErrorMessage(e) {
 async function callGemini(persona, userMessage, scenario) {
   const model = Deno.env.get("GEMINI_MODEL") ?? "gemini-2.5-flash";
   const url = `${GEMINI_API_URL}/${model}:generateContent`;
+  // System prompt: interpolacja z escape'em delimiterów — user_input nigdy surowo.
+  const systemText = renderSystemPrompt(persona, scenario, userMessage);
   const payload = {
     system_instruction: {
       parts: [
         {
-          text: persona.systemPrompt
+          text: systemText
         }
       ]
     },
@@ -73,12 +61,9 @@ async function callGemini(persona, userMessage, scenario) {
         role: "user",
         parts: [
           {
-            text: scenario ? `Scenariusz: ${scenario}` : ""
-          },
-          {
             text: userMessage
           }
-        ].filter((p)=>p.text.length > 0)
+        ]
       }
     ],
     generationConfig: {
