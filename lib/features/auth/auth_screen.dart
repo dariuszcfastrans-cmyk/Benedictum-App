@@ -6,6 +6,7 @@ import '../../config/routes.dart';
 import '../../core/errors/app_exceptions.dart';
 import '../../services/interfaces/i_auth_service.dart';
 import '../../services/mocks/mock_auth_service.dart';
+import '../../services/service_locator.dart';
 
 /// Ekran autoryzacji — C1: formularz email + hasło na IAuthService.
 /// Tryb logowania (signIn) lub rejestracji (signUp) przełączany w UI.
@@ -21,7 +22,9 @@ class AuthScreen extends StatefulWidget {
 }
 
 class _AuthScreenState extends State<AuthScreen> {
-  late final IAuthService _authService = widget.authService ?? MockAuthService();
+  // Priorytet: parametr → rejestr (ServiceLocator) → Mock (fallback offline).
+  late final IAuthService _authService =
+      widget.authService ?? ServiceLocator.authService ?? MockAuthService();
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();

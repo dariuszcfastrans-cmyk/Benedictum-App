@@ -1,24 +1,35 @@
 import 'package:purchases_flutter/purchases_flutter.dart';
 
-/// Serwis subskrypcji RevenueCat — Część C1.
-/// Inicjalizacja z placeholderem (pusty klucz jest tolerowany przez SDK).
-/// Prawdziwy klucz publiczny w C2 (konfiguracja backendu, nie kod).
+/// Serwis subskrypcji RevenueCat — Część C2.
+/// Klucz publiczny wyłącznie przez --dart-define (REVENUECAT_KEY), zero literałów.
+/// Init tylko na Android/iOS (!kIsWeb); brak klucza → brak inicjalizacji (bez crasha).
 class RevenueCatService {
   RevenueCatService._();
   static final RevenueCatService instance = RevenueCatService._();
 
   static const String _proEntitlementId = 'pro_access';
+  static const String _apiKey = String.fromEnvironment('REVENUECAT_KEY');
 
   bool _initialized = false;
 
-  /// Konfiguracja SDK. [apiKey] — placeholder w C1 ('').
-  /// Ustawia tryb logowania na błędy i rejestruje identyfikator entitlementu.
+  /// Czy SDK został zainicjalizowany.
+  bool get isInitialized => _initialized;
+
+  /// Konfiguracja SDK. Wymaga prawdziwego [apiKey] przekazanego z zewnątrz
+  /// (--dart-define). appUserID wiąże subskrypcję z zalogowanym użytkownikiem.
   /// Błędy SDK (np. brak platformy w środowisku testowym/web) nie blokują startu.
-  Future<void> init({required String apiKey}) async {
+  Future<void> init({String? apiKey, String? userId}) async {
     if (_initialized) return;
+    final key = apiKey ?? _apiKey;
+    if (key.isEmpty) return; // brak klucza — nie inicjalizuj (brak crasha)
+
     try {
       await Purchases.setLogLevel(LogLevel.error);
-      await Purchases.configure(PurchasesConfiguration(apiKey));
+      final configuration = PurchasesConfiguration(key);
+      if (userId != null && userId.isNotEmpty) {
+        configuration.appUserID = userId;
+      }
+      await Purchases.configure(configuration);
       _initialized = true;
     } catch (_) {
       _initialized = false;
@@ -26,7 +37,6 @@ class RevenueCatService {
   }
 
   /// Czy bieżący użytkownik ma aktywny entitlement 'pro_access'.
-  /// W C1 zwraca mockowo false (brak płatności); w C2 — prawdziwe dane SDK.
   Future<bool> hasProAccess() async {
     if (!_initialized) return false;
     try {

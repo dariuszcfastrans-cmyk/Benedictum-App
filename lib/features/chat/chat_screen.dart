@@ -8,6 +8,7 @@ import '../../models/persona.dart';
 import '../../models/scenario.dart';
 import '../../services/interfaces/i_api_service.dart';
 import '../../services/mocks/mock_api_service.dart';
+import '../../services/service_locator.dart';
 
 /// Ekran czatu: lista wiadomości (bąbelki), input, mock API z 3 personami.
 class ChatScreen extends StatefulWidget {
@@ -23,7 +24,9 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _inputController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  late final IApiService _apiService = widget.apiService ?? MockApiService();
+  // Priorytet: parametr → rejestr (ServiceLocator) → Mock (fallback offline).
+  late final IApiService _apiService =
+      widget.apiService ?? ServiceLocator.apiService ?? MockApiService();
   final List<Message> _messages = [];
   bool _isLoading = false;
   Scenario? _scenario;
