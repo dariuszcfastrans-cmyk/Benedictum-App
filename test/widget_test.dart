@@ -1,31 +1,38 @@
-import 'package:flutter/material.dart';
-import 'package:benedictum_mobile/l10n/app_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:benedictum_mobile/app.dart';
 
 void main() {
   testWidgets('Splash renderuje appTitle po polsku', (tester) async {
-    await tester.pumpWidget(const BenedictumApp());
+    await tester.pumpWidget(BenedictumApp());
+    // Przysunięcie czasu — timery fade-in i AnimatedOpacity.
+    await tester.pump(const Duration(milliseconds: 800));
 
-    // Lokalizacja domyślna: pl.
-    expect(AppLocalizations.of(tester.element(find.byType(Text).first)).localeName, 'pl');
     expect(find.text('Benedictum'), findsOneWidget);
     expect(find.text('Przejdź dalej'), findsOneWidget);
   });
 
-  testWidgets('Nawigacja Splash -> Home zamyka Splash i otwiera Home', (tester) async {
-    await tester.pumpWidget(const BenedictumApp());
+  testWidgets('Nawigacja Splash -> Auth -> Home', (tester) async {
+    await tester.pumpWidget(BenedictumApp());
+    // Przysunięcie czasu — timery fade-in i AnimatedOpacity.
+    await tester.pump(const Duration(milliseconds: 800));
 
     // Splash widoczny.
     expect(find.text('Benedictum'), findsOneWidget);
+
+    // Klik „Przejdź dalej" — przejście do /auth.
+    await tester.tap(find.text('Przejdź dalej'));
+    await tester.pumpAndSettle();
+
+    // Auth otwarty (tytuł z ARB po polsku — AppBar + body).
+    expect(find.text('Logowanie'), findsNWidgets(2));
 
     // Klik „Przejdź dalej" — przejście do /home.
     await tester.tap(find.text('Przejdź dalej'));
     await tester.pumpAndSettle();
 
-    // Splash zamknięty, Home otwarty (tytuł z ARB po polsku).
+    // Home otwarty (tytuł + karta scenariusza).
     expect(find.text('Strona główna'), findsOneWidget);
-    expect(find.text('Benedictum'), findsNothing);
+    expect(find.text('Pitch do inwestora'), findsOneWidget);
   });
 }

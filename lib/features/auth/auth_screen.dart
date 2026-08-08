@@ -2,24 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:benedictum_mobile/l10n/app_localizations.dart';
 
-import '../config/routes.dart';
+import '../../config/routes.dart';
 
-/// Ekran startowy. W części A: tylko przycisk „Przejdź dalej".
-class SplashScreen extends StatelessWidget {
-  const SplashScreen({super.key});
+/// Ekran autoryzacji — placeholder w części B.
+/// Prawdziwe logowanie (Supabase Auth) w części C.
+class AuthScreen extends StatelessWidget {
+  const AuthScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
+      appBar: AppBar(title: Text(l10n.authTitle)),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              l10n.appTitle,
-              style: Theme.of(context).textTheme.displaySmall,
-            ),
+            const Icon(Icons.lock_outline, size: 64),
+            const SizedBox(height: 24),
+            Text(l10n.authTitle, style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 32),
             FilledButton(
               onPressed: () => context.go(AppRoutes.home),

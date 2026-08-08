@@ -114,11 +114,35 @@ abstract class AppLocalizations {
   /// **'Continue'**
   String get splashContinue;
 
+  /// No description provided for @authTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get authTitle;
+
   /// No description provided for @homeTitle.
   ///
   /// In en, this message translates to:
   /// **'Home'**
   String get homeTitle;
+
+  /// No description provided for @homeScenarios.
+  ///
+  /// In en, this message translates to:
+  /// **'Scenarios'**
+  String get homeScenarios;
+
+  /// No description provided for @scenarioPitchTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pitch to an Investor'**
+  String get scenarioPitchTitle;
+
+  /// No description provided for @scenarioPitchSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice your investor pitch in front of a virtual board'**
+  String get scenarioPitchSubtitle;
 
   /// No description provided for @chatTitle.
   ///
@@ -126,11 +150,59 @@ abstract class AppLocalizations {
   /// **'Chat'**
   String get chatTitle;
 
+  /// No description provided for @chatInputHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Type your argument...'**
+  String get chatInputHint;
+
+  /// No description provided for @chatSend.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get chatSend;
+
+  /// No description provided for @chatEndSession.
+  ///
+  /// In en, this message translates to:
+  /// **'End session'**
+  String get chatEndSession;
+
   /// No description provided for @reportTitle.
   ///
   /// In en, this message translates to:
   /// **'Report'**
   String get reportTitle;
+
+  /// No description provided for @reportStrengths.
+  ///
+  /// In en, this message translates to:
+  /// **'Strengths'**
+  String get reportStrengths;
+
+  /// No description provided for @reportRisks.
+  ///
+  /// In en, this message translates to:
+  /// **'Gaps and risks'**
+  String get reportRisks;
+
+  /// No description provided for @reportTips.
+  ///
+  /// In en, this message translates to:
+  /// **'Tips'**
+  String get reportTips;
+
+  /// No description provided for @reportSaveHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Save to history'**
+  String get reportSaveHistory;
+
+  /// No description provided for @reportUnlockMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock more'**
+  String get reportUnlockMore;
 
   /// No description provided for @settingsTitle.
   ///
@@ -138,11 +210,41 @@ abstract class AppLocalizations {
   /// **'Settings'**
   String get settingsTitle;
 
-  /// No description provided for @authTitle.
+  /// No description provided for @settingsLanguage.
   ///
   /// In en, this message translates to:
-  /// **'Sign in'**
-  String get authTitle;
+  /// **'Language'**
+  String get settingsLanguage;
+
+  /// No description provided for @settingsAbout.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get settingsAbout;
+
+  /// No description provided for @settingsLogout.
+  ///
+  /// In en, this message translates to:
+  /// **'Log out'**
+  String get settingsLogout;
+
+  /// No description provided for @personaCritic.
+  ///
+  /// In en, this message translates to:
+  /// **'The Critic'**
+  String get personaCritic;
+
+  /// No description provided for @personaOptimist.
+  ///
+  /// In en, this message translates to:
+  /// **'The Optimist'**
+  String get personaOptimist;
+
+  /// No description provided for @personaCoach.
+  ///
+  /// In en, this message translates to:
+  /// **'The Coach'**
+  String get personaCoach;
 }
 
 class _AppLocalizationsDelegate
