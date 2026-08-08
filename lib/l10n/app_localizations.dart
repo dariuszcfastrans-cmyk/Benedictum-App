@@ -120,6 +120,42 @@ abstract class AppLocalizations {
   /// **'Sign in'**
   String get authTitle;
 
+  /// No description provided for @authEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get authEmail;
+
+  /// No description provided for @authPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get authPassword;
+
+  /// No description provided for @authLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get authLogin;
+
+  /// No description provided for @authRegister.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign up'**
+  String get authRegister;
+
+  /// No description provided for @authSwitchToLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Already have an account? Sign in'**
+  String get authSwitchToLogin;
+
+  /// No description provided for @authSwitchToRegister.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t have an account? Sign up'**
+  String get authSwitchToRegister;
+
   /// No description provided for @homeTitle.
   ///
   /// In en, this message translates to:

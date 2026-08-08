@@ -14,8 +14,10 @@ Future<void> _navigateToChat(WidgetTester tester) async {
   await tester.tap(find.text('Przejdź dalej'));
   await tester.pumpAndSettle();
 
-  // Auth → Home.
-  await tester.tap(find.text('Przejdź dalej'));
+  // Auth → Home (logowanie mockowe).
+  await tester.enterText(find.widgetWithText(TextField, 'E-mail'), 'a@b.com');
+  await tester.enterText(find.widgetWithText(TextField, 'Hasło'), 'secret');
+  await tester.tap(find.text('Zaloguj'));
   await tester.pumpAndSettle();
 
   // Home → Chat (scenariusz "Pitch do inwestora").

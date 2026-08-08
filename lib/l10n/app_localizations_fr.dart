@@ -18,6 +18,24 @@ class AppLocalizationsFr extends AppLocalizations {
   String get authTitle => 'Sign in';
 
   @override
+  String get authEmail => 'Email';
+
+  @override
+  String get authPassword => 'Password';
+
+  @override
+  String get authLogin => 'Sign in';
+
+  @override
+  String get authRegister => 'Sign up';
+
+  @override
+  String get authSwitchToLogin => 'Already have an account? Sign in';
+
+  @override
+  String get authSwitchToRegister => 'Don\'t have an account? Sign up';
+
+  @override
   String get homeTitle => 'Home';
 
   @override

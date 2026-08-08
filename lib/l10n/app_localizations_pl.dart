@@ -18,6 +18,24 @@ class AppLocalizationsPl extends AppLocalizations {
   String get authTitle => 'Logowanie';
 
   @override
+  String get authEmail => 'E-mail';
+
+  @override
+  String get authPassword => 'Hasło';
+
+  @override
+  String get authLogin => 'Zaloguj';
+
+  @override
+  String get authRegister => 'Zarejestruj się';
+
+  @override
+  String get authSwitchToLogin => 'Masz już konto? Zaloguj się';
+
+  @override
+  String get authSwitchToRegister => 'Nie masz konta? Zarejestruj się';
+
+  @override
   String get homeTitle => 'Strona główna';
 
   @override

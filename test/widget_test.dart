@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:benedictum_mobile/app.dart';
@@ -27,8 +28,10 @@ void main() {
     // Auth otwarty (tytuł z ARB po polsku — AppBar + body).
     expect(find.text('Logowanie'), findsNWidgets(2));
 
-    // Klik „Przejdź dalej" — przejście do /home.
-    await tester.tap(find.text('Przejdź dalej'));
+    // Klik „Zaloguj" — przejście do /home.
+    await tester.enterText(find.widgetWithText(TextField, 'E-mail'), 'a@b.com');
+    await tester.enterText(find.widgetWithText(TextField, 'Hasło'), 'secret');
+    await tester.tap(find.text('Zaloguj'));
     await tester.pumpAndSettle();
 
     // Home otwarty (tytuł + karta scenariusza).

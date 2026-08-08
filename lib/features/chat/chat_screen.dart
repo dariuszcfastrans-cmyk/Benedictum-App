@@ -6,11 +6,15 @@ import '../../config/routes.dart';
 import '../../models/message.dart';
 import '../../models/persona.dart';
 import '../../models/scenario.dart';
-import '../../services/mock_api_service.dart';
+import '../../services/interfaces/i_api_service.dart';
+import '../../services/mocks/mock_api_service.dart';
 
 /// Ekran czatu: lista wiadomości (bąbelki), input, mock API z 3 personami.
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key});
+  const ChatScreen({super.key, this.apiService});
+
+  /// Wstrzykiwany serwis API; domyślnie MockApiService (C1).
+  final IApiService? apiService;
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -19,7 +23,7 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _inputController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  final MockApiService _apiService = MockApiService();
+  late final IApiService _apiService = widget.apiService ?? MockApiService();
   final List<Message> _messages = [];
   bool _isLoading = false;
   Scenario? _scenario;
@@ -56,7 +60,10 @@ class _ChatScreenState extends State<ChatScreen> {
       _inputController.clear();
     });
 
-    final responses = await _apiService.getPersonaResponses(text);
+    final responses = await _apiService.getPersonaResponses(
+      userInput: text,
+      scenario: _scenario?.id ?? '',
+    );
 
     // Sprawdzenie mounted po operacji asynchronicznej.
     if (!mounted) return;
