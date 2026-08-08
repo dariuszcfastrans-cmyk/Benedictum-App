@@ -98,4 +98,74 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get personaCoach => 'The Coach';
+
+  @override
+  String get paywallTitle => 'Benedictum Pro';
+
+  @override
+  String get paywallSubtitle =>
+      'Desbloquea el acceso completo a 3 entrenadores de IA e informes';
+
+  @override
+  String get paywallMonthly => 'Mensual';
+
+  @override
+  String get paywallSixMonth => 'Seis meses';
+
+  @override
+  String get paywallYearly => 'Anual';
+
+  @override
+  String get paywallSubscribe => 'Suscribirse';
+
+  @override
+  String get paywallRestore => 'Restaurar compras';
+
+  @override
+  String get paywallLoading => 'Cargando ofertas...';
+
+  @override
+  String get paywallError =>
+      'No se pudieron cargar las ofertas. Inténtalo de nuevo.';
+
+  @override
+  String get paywallRetry => 'Reintentar';
+
+  @override
+  String get paywallPurchaseSuccess =>
+      '¡Suscripción activa! Bienvenido a Benedictum Pro.';
+
+  @override
+  String get paywallPurchaseCancelled => 'Compra cancelada.';
+
+  @override
+  String get paywallRestoreSuccess => 'Compras restauradas.';
+
+  @override
+  String get paywallRestoreNone => 'No hay compras activas para restaurar.';
+
+  @override
+  String get chatProRequired =>
+      'Esta función requiere una suscripción a Benedictum Pro.';
+
+  @override
+  String get chatGoPro => 'Desbloquear Pro';
+
+  @override
+  String get settingsSubscription => 'Suscripción';
+
+  @override
+  String get settingsTier => 'Nivel';
+
+  @override
+  String get settingsTierFree => 'Free';
+
+  @override
+  String get settingsTierPro => 'Pro';
+
+  @override
+  String get settingsExpiry => 'Caduca';
+
+  @override
+  String get settingsManage => 'Gestionar suscripción';
 }

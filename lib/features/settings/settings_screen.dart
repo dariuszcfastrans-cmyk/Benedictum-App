@@ -4,16 +4,51 @@ import 'package:benedictum_mobile/l10n/app_localizations.dart';
 
 import '../../config/locale_controller.dart';
 import '../../config/routes.dart';
+import '../../services/interfaces/i_revenuecat_service.dart';
+import '../../services/revenuecat_service.dart';
 
-/// Ekran ustawień: wybór języka (bez restartu), o aplikacji, wyloguj (placeholder).
+/// Ekran ustawień: wybór języka (bez restartu), o aplikacji, subskrypcja,
+/// wyloguj (placeholder).
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key});
+  const SettingsScreen({super.key, this.revenueCatService});
+
+  /// Wstrzykiwany serwis RevenueCat; domyślnie singleton.
+  final IRevenueCatService? revenueCatService;
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  late final IRevenueCatService _revenueCatService =
+      widget.revenueCatService ?? RevenueCatService.instance;
+
+  bool _checkingAccess = true;
+  bool _hasPro = false;
+  DateTime? _expiry;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSubscriptionInfo();
+  }
+
+  /// Pobiera status subskrypcji Pro (tier + data wygaśnięcia).
+  Future<void> _loadSubscriptionInfo() async {
+    if (!_revenueCatService.isInitialized) {
+      if (mounted) setState(() => _checkingAccess = false);
+      return;
+    }
+    final hasPro = await _revenueCatService.checkProAccess();
+    final expiry = hasPro ? await _revenueCatService.getProExpiryDate() : null;
+    if (!mounted) return;
+    setState(() {
+      _checkingAccess = false;
+      _hasPro = hasPro;
+      _expiry = expiry;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -49,6 +84,42 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 24),
           Text(
+            l10n.settingsSubscription,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 8),
+          Card(
+            child: ListTile(
+              leading: Icon(
+                _checkingAccess
+                    ? null
+                    : (_hasPro ? Icons.workspace_premium : Icons.lock_outline),
+              ),
+              title: Text(
+                _checkingAccess
+                    ? '...'
+                    : _hasPro
+                        ? l10n.settingsTierPro
+                        : l10n.settingsTierFree,
+              ),
+              subtitle: Text(
+                _checkingAccess
+                    ? '...'
+                    : _hasPro && _expiry != null
+                        ? '${l10n.settingsExpiry}: ${_formatDate(_expiry!)}'
+                        : _hasPro
+                            ? l10n.settingsExpiry
+                            : '${l10n.settingsTier}: ${l10n.settingsTierFree}',
+              ),
+              trailing: IconButton(
+                icon: const Icon(Icons.chevron_right),
+                onPressed: () => context.go(AppRoutes.paywall),
+                tooltip: l10n.settingsManage,
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Text(
             l10n.settingsAbout,
             style: Theme.of(context).textTheme.titleMedium,
           ),
@@ -69,5 +140,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ],
       ),
     );
+  }
+
+  String _formatDate(DateTime date) {
+    final local = date.toLocal();
+    final month = local.month.toString().padLeft(2, '0');
+    final day = local.day.toString().padLeft(2, '0');
+    return '$day.$month.${local.year}';
   }
 }

@@ -281,6 +281,138 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The Coach'**
   String get personaCoach;
+
+  /// No description provided for @paywallTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Benedictum Pro'**
+  String get paywallTitle;
+
+  /// No description provided for @paywallSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock full access to 3 AI coaches and reports'**
+  String get paywallSubtitle;
+
+  /// No description provided for @paywallMonthly.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get paywallMonthly;
+
+  /// No description provided for @paywallSixMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Six months'**
+  String get paywallSixMonth;
+
+  /// No description provided for @paywallYearly.
+  ///
+  /// In en, this message translates to:
+  /// **'Yearly'**
+  String get paywallYearly;
+
+  /// No description provided for @paywallSubscribe.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscribe'**
+  String get paywallSubscribe;
+
+  /// No description provided for @paywallRestore.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore purchases'**
+  String get paywallRestore;
+
+  /// No description provided for @paywallLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading offers...'**
+  String get paywallLoading;
+
+  /// No description provided for @paywallError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load offers. Please try again.'**
+  String get paywallError;
+
+  /// No description provided for @paywallRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Try again'**
+  String get paywallRetry;
+
+  /// No description provided for @paywallPurchaseSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscription active! Welcome to Benedictum Pro.'**
+  String get paywallPurchaseSuccess;
+
+  /// No description provided for @paywallPurchaseCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchase cancelled.'**
+  String get paywallPurchaseCancelled;
+
+  /// No description provided for @paywallRestoreSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Purchases restored.'**
+  String get paywallRestoreSuccess;
+
+  /// No description provided for @paywallRestoreNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No active purchases to restore.'**
+  String get paywallRestoreNone;
+
+  /// No description provided for @chatProRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'This feature requires a Benedictum Pro subscription.'**
+  String get chatProRequired;
+
+  /// No description provided for @chatGoPro.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock Pro'**
+  String get chatGoPro;
+
+  /// No description provided for @settingsSubscription.
+  ///
+  /// In en, this message translates to:
+  /// **'Subscription'**
+  String get settingsSubscription;
+
+  /// No description provided for @settingsTier.
+  ///
+  /// In en, this message translates to:
+  /// **'Tier'**
+  String get settingsTier;
+
+  /// No description provided for @settingsTierFree.
+  ///
+  /// In en, this message translates to:
+  /// **'Free'**
+  String get settingsTierFree;
+
+  /// No description provided for @settingsTierPro.
+  ///
+  /// In en, this message translates to:
+  /// **'Pro'**
+  String get settingsTierPro;
+
+  /// No description provided for @settingsExpiry.
+  ///
+  /// In en, this message translates to:
+  /// **'Expires'**
+  String get settingsExpiry;
+
+  /// No description provided for @settingsManage.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage subscription'**
+  String get settingsManage;
 }
 
 class _AppLocalizationsDelegate

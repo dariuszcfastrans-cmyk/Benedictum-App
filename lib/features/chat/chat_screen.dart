@@ -7,15 +7,20 @@ import '../../models/message.dart';
 import '../../models/persona.dart';
 import '../../models/scenario.dart';
 import '../../services/interfaces/i_api_service.dart';
+import '../../services/interfaces/i_revenuecat_service.dart';
 import '../../services/mocks/mock_api_service.dart';
+import '../../services/revenuecat_service.dart';
 import '../../services/service_locator.dart';
 
 /// Ekran czatu: lista wiadomości (bąbelki), input, mock API z 3 personami.
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key, this.apiService});
+  const ChatScreen({super.key, this.apiService, this.revenueCatService});
 
   /// Wstrzykiwany serwis API; domyślnie MockApiService (C1).
   final IApiService? apiService;
+
+  /// Wstrzykiwany serwis RevenueCat; domyślnie singleton.
+  final IRevenueCatService? revenueCatService;
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -27,6 +32,8 @@ class _ChatScreenState extends State<ChatScreen> {
   // Priorytet: parametr → rejestr (ServiceLocator) → Mock (fallback offline).
   late final IApiService _apiService =
       widget.apiService ?? ServiceLocator.apiService ?? MockApiService();
+  late final IRevenueCatService _revenueCatService =
+      widget.revenueCatService ?? RevenueCatService.instance;
   final List<Message> _messages = [];
   bool _isLoading = false;
   Scenario? _scenario;
@@ -48,9 +55,40 @@ class _ChatScreenState extends State<ChatScreen> {
     super.dispose();
   }
 
+  /// Brama dostępu Pro (Część D2): przed zapytaniem do gemini-proxy sprawdza,
+  /// czy użytkownik ma aktywny entitlement 'Benedictum Pro'. Brak Pro →
+  /// snackbar z przyciskiem do paywall, bez wywołania API.
+  Future<bool> _hasProAccess() async {
+    if (!_revenueCatService.isInitialized) return true; // offline/dev: brak bramy
+    return _revenueCatService.checkProAccess();
+  }
+
+  void _showProRequired() {
+    final l10n = AppLocalizations.of(context);
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(l10n.chatProRequired),
+          action: SnackBarAction(
+            label: l10n.chatGoPro,
+            onPressed: () => context.go(AppRoutes.paywall),
+          ),
+        ),
+      );
+  }
+
   Future<void> _sendMessage() async {
     final text = _inputController.text.trim();
     if (text.isEmpty || _isLoading) return;
+
+    // D2: brama Pro — brak dostępu blokuje wysłanie do gemini-proxy.
+    if (!await _hasProAccess()) {
+      if (!mounted) return;
+      _showProRequired();
+      return;
+    }
+    if (!mounted) return;
 
     setState(() {
       _isLoading = true;

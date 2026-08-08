@@ -6,6 +6,7 @@ import '../features/home/home_screen.dart';
 import '../features/report/report_screen.dart';
 import '../features/settings/settings_screen.dart';
 import '../features/splash/splash_screen.dart';
+import '../screens/paywall_screen.dart';
 
 /// Konfiguracja nawigacji aplikacji Benedictum (GoRouter).
 abstract final class AppRoutes {
@@ -15,6 +16,7 @@ abstract final class AppRoutes {
   static const String chat = '/chat';
   static const String report = '/report';
   static const String settings = '/settings';
+  static const String paywall = '/paywall';
 }
 
 GoRouter createRouter() {
@@ -44,6 +46,11 @@ GoRouter createRouter() {
       GoRoute(
         path: AppRoutes.settings,
         builder: (context, state) => const SettingsScreen(),
+      ),
+      // Deep link benedictum://paywall trafia tutaj (ścieżka /paywall).
+      GoRoute(
+        path: AppRoutes.paywall,
+        builder: (context, state) => const PaywallScreen(),
       ),
     ],
   );

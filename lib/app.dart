@@ -6,14 +6,31 @@ import 'package:benedictum_mobile/l10n/app_localizations.dart';
 import 'config/locale_controller.dart';
 import 'config/routes.dart';
 import 'config/theme.dart';
+import 'services/onesignal_service.dart';
 
 /// Główny widget aplikacji Benedictum.
 /// Zmiana locale w Settings przełącza UI bez restartu procesu.
-class BenedictumApp extends StatelessWidget {
-  BenedictumApp({super.key});
+class BenedictumApp extends StatefulWidget {
+  const BenedictumApp({super.key});
 
+  @override
+  State<BenedictumApp> createState() => _BenedictumAppState();
+}
+
+class _BenedictumAppState extends State<BenedictumApp> {
   // Router tworzony raz — nie w build, by zmiana locale nie resetowała nawigacji.
-  final GoRouter _router = createRouter();
+  late final GoRouter _router = createRouter();
+
+  @override
+  void initState() {
+    super.initState();
+    // Deep link z powiadomień OneSignal: benedictum://paywall → ekran płatności.
+    OneSignalService.instance.setDeepLinkHandler((url) {
+      if (url == 'benedictum://paywall') {
+        _router.go(AppRoutes.paywall);
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

@@ -6,6 +6,8 @@ import '../../config/routes.dart';
 import '../../core/errors/app_exceptions.dart';
 import '../../services/interfaces/i_auth_service.dart';
 import '../../services/mocks/mock_auth_service.dart';
+import '../../services/onesignal_service.dart';
+import '../../services/revenuecat_service.dart';
 import '../../services/service_locator.dart';
 
 /// Ekran autoryzacji — C1: formularz email + hasło na IAuthService.
@@ -65,6 +67,8 @@ class _AuthScreenState extends State<AuthScreen> {
           ),
         );
       }
+      await _syncSubscription(result.user.id);
+      if (!mounted) return;
       context.go(AppRoutes.home);
     } on AuthException catch (e) {
       if (!mounted) return;
@@ -75,6 +79,21 @@ class _AuthScreenState extends State<AuthScreen> {
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
+  }
+
+  /// Po zalogowaniu: wiąże userId z RevenueCat oraz ustawia tagi OneSignal
+  /// ({user_id, tier}). Błędy poszczególnych SDK nie blokują nawigacji.
+  Future<void> _syncSubscription(String userId) async {
+    try {
+      await RevenueCatService.instance.setUserId(userId);
+    } catch (_) {}
+    try {
+      final hasPro = await RevenueCatService.instance.checkProAccess();
+      await OneSignalService.instance.setTags(
+        userId: userId,
+        tier: hasPro ? 'pro' : 'free',
+      );
+    } catch (_) {}
   }
 
   @override
