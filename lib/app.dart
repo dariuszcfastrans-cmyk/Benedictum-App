@@ -26,7 +26,7 @@ class _BenedictumAppState extends State<BenedictumApp> {
     super.initState();
     // Deep link z powiadomień OneSignal: benedictum://paywall → ekran płatności.
     OneSignalService.instance.setDeepLinkHandler((url) {
-      if (url == 'benedictum://paywall') {
+      if (url.startsWith('benedictum://paywall')) {
         _router.go(AppRoutes.paywall);
       }
     });

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:benedictum_mobile/l10n/app_localizations.dart';
@@ -58,7 +59,10 @@ class _ChatScreenState extends State<ChatScreen> {
   /// Brama dostępu Pro (Część D2): przed zapytaniem do gemini-proxy sprawdza,
   /// czy użytkownik ma aktywny entitlement 'Benedictum Pro'. Brak Pro →
   /// snackbar z przyciskiem do paywall, bez wywołania API.
+  /// Web = tryb demo: pomijamy bramę (RevenueCat nie działa na Web);
+  /// ochrona po stronie serwera (JWT + rate-limit) pozostaje.
   Future<bool> _hasProAccess() async {
+    if (kIsWeb) return true;
     if (!_revenueCatService.isInitialized) return true; // offline/dev: brak bramy
     return _revenueCatService.checkProAccess();
   }
