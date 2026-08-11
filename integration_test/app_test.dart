@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
@@ -8,22 +9,22 @@ import 'package:benedictum_mobile/app.dart';
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('Aplikacja startuje, Splash wyświetla się po polsku', (tester) async {
+  testWidgets('Aplikacja startuje, Splash → Auth', (tester) async {
     await tester.pumpWidget(BenedictumApp());
     // Przysunięcie czasu — timery fade-in i AnimatedOpacity Splash.
     await tester.pump(const Duration(milliseconds: 800));
     await tester.pumpAndSettle();
 
+    // Splash: logo + przycisk dalej.
     expect(find.text('Benedictum'), findsOneWidget);
     expect(find.text('Przejdź dalej'), findsOneWidget);
 
-    // Pełna ścieżka: Splash → Auth → Home.
+    // Splash → Auth: ekran logowania z polami E-mail i Hasło.
     await tester.tap(find.text('Przejdź dalej'));
     await tester.pumpAndSettle();
-    expect(find.text('Logowanie'), findsNWidgets(2));
-
-    await tester.tap(find.text('Przejdź dalej'));
-    await tester.pumpAndSettle();
-    expect(find.text('Strona główna'), findsOneWidget);
+    expect(find.text('Logowanie'), findsWidgets);
+    expect(find.widgetWithText(TextField, 'E-mail'), findsOneWidget);
+    expect(find.widgetWithText(TextField, 'Hasło'), findsOneWidget);
+    expect(find.text('Zaloguj'), findsOneWidget);
   });
 }
