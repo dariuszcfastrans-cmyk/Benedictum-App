@@ -1,5 +1,4 @@
-import 'package:supabase_flutter/supabase_flutter.dart'
-    hide AuthException, User;
+import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 
 import '../core/errors/app_exceptions.dart';
 import '../models/user.dart';
@@ -11,7 +10,7 @@ import 'interfaces/i_auth_service.dart';
 class SupabaseAuthService implements IAuthService {
   SupabaseAuthService();
 
-  GoTrueClient get _auth => Supabase.instance.client.auth;
+  supabase.GoTrueClient get _auth => supabase.Supabase.instance.client.auth;
 
   @override
   User? get currentUser {
@@ -27,24 +26,55 @@ class SupabaseAuthService implements IAuthService {
   @override
   bool isEmailConfirmed() => _auth.currentUser?.emailConfirmedAt != null;
 
+  /// Tłumaczy wyjątek z pakietu supabase_flutter na aplikacyjny AuthException
+  /// z czytelnym komunikatem PL. Bez tego błąd trafiałby do generycznego
+  /// catch (_) w AuthScreen ("Nieznany błąd logowania").
+  Never _mapSupabaseAuthError(Object error) {
+    if (error is supabase.AuthException) {
+      final msg = error.message.toLowerCase();
+      final code = error.code?.toLowerCase() ?? '';
+      final status = error.statusCode ?? '';
+      if (code.contains('invalid_credentials') ||
+          msg.contains('invalid login credentials') ||
+          msg.contains('invalid_credentials')) {
+        throw AuthException('Nieprawidłowy e-mail lub hasło.');
+      }
+      if (code.contains('email_not_confirmed') ||
+          msg.contains('not confirmed') ||
+          msg.contains('email not confirmed') ||
+          status == '422') {
+        throw AuthException('Potwierdź e-mail przed logowaniem.');
+      }
+      if (status == '429' || msg.contains('rate limit') || msg.contains('too many')) {
+        throw AuthException('Zbyt wiele prób. Spróbuj później.');
+      }
+      throw AuthException('Błąd logowania: ${error.message}');
+    }
+    throw AuthException('Błąd logowania: $error');
+  }
+
   @override
   Future<AuthResult> signUp({
     required String email,
     required String password,
   }) async {
-    final response = await _auth.signUp(email: email, password: password);
-    final authUser = response.user;
-    if (authUser == null) {
-      throw AuthException('Brak odpowiedzi rejestracji od serwera.');
+    try {
+      final response = await _auth.signUp(email: email, password: password);
+      final authUser = response.user;
+      if (authUser == null) {
+        throw AuthException('Brak odpowiedzi rejestracji od serwera.');
+      }
+      return AuthResult(
+        user: User(
+          id: authUser.id,
+          email: authUser.email ?? email,
+          displayName: authUser.userMetadata?['display_name'] as String?,
+        ),
+        isEmailConfirmed: authUser.emailConfirmedAt != null,
+      );
+    } catch (e) {
+      _mapSupabaseAuthError(e);
     }
-    return AuthResult(
-      user: User(
-        id: authUser.id,
-        email: authUser.email ?? email,
-        displayName: authUser.userMetadata?['display_name'] as String?,
-      ),
-      isEmailConfirmed: authUser.emailConfirmedAt != null,
-    );
   }
 
   @override
@@ -52,22 +82,26 @@ class SupabaseAuthService implements IAuthService {
     required String email,
     required String password,
   }) async {
-    final response = await _auth.signInWithPassword(
-      email: email,
-      password: password,
-    );
-    final authUser = response.user;
-    if (authUser == null) {
-      throw AuthException('Nieprawidłowy e-mail lub hasło.');
+    try {
+      final response = await _auth.signInWithPassword(
+        email: email,
+        password: password,
+      );
+      final authUser = response.user;
+      if (authUser == null) {
+        throw AuthException('Nieprawidłowy e-mail lub hasło.');
+      }
+      return AuthResult(
+        user: User(
+          id: authUser.id,
+          email: authUser.email ?? email,
+          displayName: authUser.userMetadata?['display_name'] as String?,
+        ),
+        isEmailConfirmed: authUser.emailConfirmedAt != null,
+      );
+    } catch (e) {
+      _mapSupabaseAuthError(e);
     }
-    return AuthResult(
-      user: User(
-        id: authUser.id,
-        email: authUser.email ?? email,
-        displayName: authUser.userMetadata?['display_name'] as String?,
-      ),
-      isEmailConfirmed: authUser.emailConfirmedAt != null,
-    );
   }
 
   @override
