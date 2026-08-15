@@ -43,11 +43,14 @@ function safeErrorMessage(e) {
   return sanitized;
 }
 // Wywołanie Gemini dla pojedynczej persony.
-async function callGemini(persona, userMessage, scenario) {
+async function callGemini(persona, userMessage, scenario, options) {
   const model = Deno.env.get("GEMINI_MODEL") ?? "gemini-2.5-flash";
   const url = `${GEMINI_API_URL}/${model}:generateContent`;
   // System prompt: interpolacja z escape'em delimiterów — user_input nigdy surowo.
-  const systemText = renderSystemPrompt(persona, scenario, userMessage);
+  const systemText = renderSystemPrompt(persona, scenario, userMessage, {
+    context: options?.context,
+    mode: options?.mode
+  });
   const payload = {
     system_instruction: {
       parts: [
@@ -112,10 +115,18 @@ function validateBody(body) {
       throw new ApiUpstreamError(422, "INVALID_PERSONA");
     }
   }
+  // Opcjonalny tryb rozmowy: "intake" (Coach-wywiad) | "analyze" (domyślny).
+  if (b.mode !== undefined && b.mode !== null) {
+    if (b.mode !== "intake" && b.mode !== "analyze") {
+      throw new ApiUpstreamError(422, "INVALID_MODE");
+    }
+  }
   return {
     persona: typeof b.persona === "string" ? b.persona : undefined,
     message: b.message.trim(),
-    scenario: b.scenario.trim()
+    scenario: b.scenario.trim(),
+    context: typeof b.context === "string" ? b.context.trim() : undefined,
+    mode: b.mode === "intake" ? "intake" : "analyze"
   };
 }
 Deno.serve(async (req)=>{
@@ -188,11 +199,18 @@ Deno.serve(async (req)=>{
         error: code
       }, e instanceof ApiUpstreamError ? e.status : 422, headers);
     }
-    // Wykonanie Gemini.
-    const targets = body.persona ? PERSONAS.filter((p)=>p.senderId === body.persona) : PERSONAS;
+    // Wykonanie Gemini. Tryb "intake" prowadzi wyłącznie Coach.
+    const targets = body.mode === "intake"
+      ? PERSONAS.filter((p)=>p.senderId === "coach")
+      : body.persona
+      ? PERSONAS.filter((p)=>p.senderId === body.persona)
+      : PERSONAS;
     const results = {};
     for (const persona of targets){
-      const text = await callGemini(persona, body.message, body.scenario);
+      const text = await callGemini(persona, body.message, body.scenario, {
+        context: body.context,
+        mode: body.mode
+      });
       results[persona.senderId] = text;
     }
     return json({

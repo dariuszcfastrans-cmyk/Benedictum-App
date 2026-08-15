@@ -11,6 +11,10 @@ import 'interfaces/i_api_service.dart';
 /// 422 → ApiException, 503 → ApiException.
 class SupabaseApiService implements IApiService {
   SupabaseApiService();
+  static const String _llmFunctionName = String.fromEnvironment(
+    'SUPABASE_LLM_FUNCTION',
+    defaultValue: 'openrouter-proxy',
+  );
 
   FunctionsClient get _functions => Supabase.instance.client.functions;
 
@@ -18,14 +22,20 @@ class SupabaseApiService implements IApiService {
   Future<List<Message>> getPersonaResponses({
     required String userInput,
     required String scenario,
+    String? context,
+    String? mode,
   }) async {
     try {
+      // Tryb "intake" prowadzi wyłącznie Coach (edge function ogranicza targety).
+      final isIntake = mode == 'intake';
       final response = await _functions.invoke(
-        'gemini-proxy',
+        _llmFunctionName,
         body: {
-          'persona': null,
+          'persona': isIntake ? 'coach' : null,
           'message': userInput,
           'scenario': scenario,
+          'context': context,
+          'mode': mode,
         },
       );
 

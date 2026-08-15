@@ -18,10 +18,16 @@ class MockApiService implements IApiService {
   Future<List<Message>> getPersonaResponses({
     required String userInput,
     required String scenario,
+    String? context,
+    String? mode,
   }) async {
     final responses = <Message>[];
+    // W trybie "intake" mock odpowiada wyłącznie jako Coach (1 odpowiedź).
+    final personas = mode == 'intake'
+        ? const <Persona>[Persona.coach]
+        : Persona.values;
 
-    for (final persona in Persona.values) {
+    for (final persona in personas) {
       await Future<void>.delayed(const Duration(milliseconds: 500));
       responses.add(Message(
         id: '${persona.senderId}_${_random.nextInt(100000)}',
