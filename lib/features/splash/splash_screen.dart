@@ -5,16 +5,26 @@ import 'package:go_router/go_router.dart';
 import 'package:benedictum_mobile/l10n/app_localizations.dart';
 
 import '../../config/routes.dart';
+import '../../services/interfaces/i_auth_service.dart';
+import '../../services/service_locator.dart';
 
 /// Ekran startowy: logo, appTitle, fade-in, przycisk „Przejdź dalej" → /auth.
+/// UX: jeśli istnieje trwała sesja (persistSession Supabase), automatycznie
+/// pomija /auth i przechodzi do /home — użytkownik nie loguje się za każdym
+/// otwarciem aplikacji.
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
+  const SplashScreen({super.key, this.authService});
+
+  /// Wstrzykiwana usługa autoryzacji; domyślnie z ServiceLocator (C2).
+  final IAuthService? authService;
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  late final IAuthService? _authService =
+      widget.authService ?? ServiceLocator.authService;
   double _opacity = 0.0;
 
   @override
@@ -26,6 +36,17 @@ class _SplashScreenState extends State<SplashScreen> {
         setState(() => _opacity = 1.0);
       }
     });
+    _checkSession();
+  }
+
+  /// Trwała sesja (currentUser != null) → /home bez logowania.
+  /// Brak sesji → standardowy przepływ do /auth.
+  void _checkSession() {
+    if (_authService?.currentUser != null) {
+      Future<void>.delayed(const Duration(milliseconds: 300), () {
+        if (mounted) context.go(AppRoutes.home);
+      });
+    }
   }
 
   @override

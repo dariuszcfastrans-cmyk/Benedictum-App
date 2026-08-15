@@ -4,16 +4,21 @@ import 'package:benedictum_mobile/l10n/app_localizations.dart';
 
 import '../../config/locale_controller.dart';
 import '../../config/routes.dart';
+import '../../services/interfaces/i_auth_service.dart';
 import '../../services/interfaces/i_revenuecat_service.dart';
 import '../../services/revenuecat_service.dart';
+import '../../services/service_locator.dart';
 
 /// Ekran ustawień: wybór języka (bez restartu), o aplikacji, subskrypcja,
-/// wyloguj (placeholder).
+/// wyloguj (czyści sesję Supabase i wraca do splash).
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key, this.revenueCatService});
+  const SettingsScreen({super.key, this.revenueCatService, this.authService});
 
   /// Wstrzykiwany serwis RevenueCat; domyślnie singleton.
   final IRevenueCatService? revenueCatService;
+
+  /// Wstrzykiwana usługa autoryzacji; domyślnie z ServiceLocator (C2).
+  final IAuthService? authService;
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -22,6 +27,8 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   late final IRevenueCatService _revenueCatService =
       widget.revenueCatService ?? RevenueCatService.instance;
+  late final IAuthService? _authService =
+      widget.authService ?? ServiceLocator.authService;
 
   bool _checkingAccess = true;
   bool _hasPro = false;
@@ -133,13 +140,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 24),
           OutlinedButton.icon(
-            onPressed: () => context.go(AppRoutes.splash),
+            onPressed: _logout,
             icon: const Icon(Icons.logout),
             label: Text(l10n.settingsLogout),
           ),
         ],
       ),
     );
+  }
+
+  /// Wylogowanie: czyści sesję Supabase i wraca do splash (gdzie przy braku
+  /// sesji pokaże się /auth). Brak usługi auth (offline/Mock) → sam nawiguje.
+  Future<void> _logout() async {
+    try {
+      await _authService?.signOut();
+    } catch (_) {
+      // Nawet gdy signOut rzuci błąd, wracamy do splash.
+    }
+    if (!mounted) return;
+    context.go(AppRoutes.splash);
   }
 
   String _formatDate(DateTime date) {
