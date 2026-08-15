@@ -17,6 +17,7 @@
   "chatInputHint": "Wpisz swój argument...",
   "chatSend": "Wyślij",
   "chatEndSession": "Zakończ sesję",
+  "chatStartAnalysis": "Przejdź do analizy",
   "reportTitle": "Raport",
   "reportStrengths": "Mocne strony",
   "reportRisks": "Luki i ryzyka",

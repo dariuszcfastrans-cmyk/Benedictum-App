@@ -14,6 +14,10 @@ import '../../services/mocks/mock_api_service.dart';
 import '../../services/revenuecat_service.dart';
 import '../../services/service_locator.dart';
 
+/// Faza rozmowy: "intake" (Coach prowadzi wywiad) lub "analyze" (3 persony).
+/// Stan lokalny i nietrwały (DEC Fala 1B) — brak persistencji świadomie.
+enum _ChatPhase { intake, analyze }
+
 /// Ekran czatu: lista wiadomości (bąbelki), input, mock API z 3 personami.
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key, this.apiService, this.revenueCatService});
@@ -39,6 +43,26 @@ class _ChatScreenState extends State<ChatScreen> {
   final List<Message> _messages = [];
   bool _isLoading = false;
   Scenario? _scenario;
+  // Faza rozmowy — startuje od wywiadu (intake); przejście do analyze jest
+  // świadomą decyzją użytkownika. Stan lokalny, gubi się przy nawigacji.
+  _ChatPhase _phase = _ChatPhase.intake;
+
+  /// Buduje context wyłącznie z wypowiedzi użytkownika (sender == 'user').
+  /// Każda wypowiedź jest oznaczana jako USER_STATEMENT — NIE jest faktem ani
+  /// hipotezą (DEC Fala 1B, D1). Odpowiedzi Coacha/modelu NIGDY nie trafiają
+  /// do contextu.
+  String _buildUserContext() {
+    final statements = _messages
+        .where((m) => m.sender == 'user')
+        .map((m) => m.content.trim())
+        .where((c) => c.isNotEmpty)
+        .toList();
+    if (statements.isEmpty) return '';
+    final numbered = statements.asMap().entries
+        .map((e) => 'USER_STATEMENT ${e.key + 1}: ${e.value}')
+        .join('\n');
+    return numbered;
+  }
 
   @override
   void didChangeDependencies() {
@@ -113,9 +137,12 @@ class _ChatScreenState extends State<ChatScreen> {
     });
 
     try {
+      final isIntake = _phase == _ChatPhase.intake;
       final responses = await _apiService.getPersonaResponses(
         userInput: text,
         scenario: _scenario?.id ?? '',
+        context: isIntake ? null : _buildUserContext(),
+        mode: isIntake ? 'intake' : 'analyze',
       );
 
       // Sprawdzenie mounted po operacji asynchronicznej.
@@ -157,6 +184,16 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
+  /// Decyzja użytkownika: przejście z wywiadu (intake) do analizy (analyze).
+  /// Nie wysyła zapytania — tylko przełącza fazę; kolejna wiadomość uruchomi
+  /// analyze z zebranym contextem. Coach może tylko zaproponować, przejście
+  /// zawsze inicjuje użytkownik (zasada UŻYTKOWNIK KONTROLUJE ANALIZĘ).
+  void _startAnalysis() {
+    setState(() {
+      _phase = _ChatPhase.analyze;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -185,6 +222,18 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
           ),
           if (_isLoading) const LinearProgressIndicator(),
+          if (_phase == _ChatPhase.intake && _buildUserContext().isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 4),
+              child: SizedBox(
+                width: double.infinity,
+                child: FilledButton.tonalIcon(
+                  onPressed: _isLoading ? null : _startAnalysis,
+                  icon: const Icon(Icons.analytics_outlined),
+                  label: Text(l10n.chatStartAnalysis),
+                ),
+              ),
+            ),
           Padding(
             padding: const EdgeInsets.all(12),
             child: Row(

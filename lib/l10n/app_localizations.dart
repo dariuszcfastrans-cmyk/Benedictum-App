@@ -204,6 +204,12 @@ abstract class AppLocalizations {
   /// **'End session'**
   String get chatEndSession;
 
+  /// No description provided for @chatStartAnalysis.
+  ///
+  /// In en, this message translates to:
+  /// **'Start analysis'**
+  String get chatStartAnalysis;
+
   /// No description provided for @reportTitle.
   ///
   /// In en, this message translates to:

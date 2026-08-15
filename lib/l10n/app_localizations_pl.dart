@@ -61,6 +61,9 @@ class AppLocalizationsPl extends AppLocalizations {
   String get chatEndSession => 'Zakończ sesję';
 
   @override
+  String get chatStartAnalysis => 'Przejdź do analizy';
+
+  @override
   String get reportTitle => 'Raport';
 
   @override

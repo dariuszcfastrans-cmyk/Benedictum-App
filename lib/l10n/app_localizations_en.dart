@@ -61,6 +61,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatEndSession => 'End session';
 
   @override
+  String get chatStartAnalysis => 'Start analysis';
+
+  @override
   String get reportTitle => 'Report';
 
   @override

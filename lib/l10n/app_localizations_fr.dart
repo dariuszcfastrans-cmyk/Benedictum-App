@@ -61,6 +61,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get chatEndSession => 'End session';
 
   @override
+  String get chatStartAnalysis => 'Lancer l\'analyse';
+
+  @override
   String get reportTitle => 'Report';
 
   @override

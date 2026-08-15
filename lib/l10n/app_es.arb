@@ -17,6 +17,7 @@
   "chatInputHint": "Type your argument...",
   "chatSend": "Send",
   "chatEndSession": "End session",
+  "chatStartAnalysis": "Iniciar análisis",
   "reportTitle": "Report",
   "reportStrengths": "Strengths",
   "reportRisks": "Gaps and risks",
