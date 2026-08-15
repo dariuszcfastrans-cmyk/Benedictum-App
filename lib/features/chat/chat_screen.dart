@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:benedictum_mobile/l10n/app_localizations.dart';
 
 import '../../config/routes.dart';
+import '../../core/errors/app_exceptions.dart';
 import '../../models/message.dart';
 import '../../models/persona.dart';
 import '../../models/scenario.dart';
@@ -82,6 +83,12 @@ class _ChatScreenState extends State<ChatScreen> {
       );
   }
 
+  void _showChatError(String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(message)));
+  }
+
   Future<void> _sendMessage() async {
     final text = _inputController.text.trim();
     if (text.isEmpty || _isLoading) return;
@@ -105,18 +112,37 @@ class _ChatScreenState extends State<ChatScreen> {
       _inputController.clear();
     });
 
-    final responses = await _apiService.getPersonaResponses(
-      userInput: text,
-      scenario: _scenario?.id ?? '',
-    );
+    try {
+      final responses = await _apiService.getPersonaResponses(
+        userInput: text,
+        scenario: _scenario?.id ?? '',
+      );
 
-    // Sprawdzenie mounted po operacji asynchronicznej.
-    if (!mounted) return;
-    setState(() {
-      _messages.addAll(responses);
-      _isLoading = false;
-    });
-    _scrollToBottom();
+      // Sprawdzenie mounted po operacji asynchronicznej.
+      if (!mounted) return;
+      setState(() {
+        _messages.addAll(responses);
+      });
+      _scrollToBottom();
+    } on RateLimitException catch (e) {
+      if (!mounted) return;
+      _showChatError(e.message);
+    } on AuthException catch (e) {
+      if (!mounted) return;
+      _showChatError(e.message);
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      _showChatError(e.message);
+    } catch (_) {
+      if (!mounted) return;
+      _showChatError('Nieznany błąd. Spróbuj ponownie.');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   void _scrollToBottom() {
