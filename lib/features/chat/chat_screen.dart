@@ -7,6 +7,7 @@ import '../../config/routes.dart';
 import '../../core/errors/app_exceptions.dart';
 import '../../models/message.dart';
 import '../../models/persona.dart';
+import '../../models/report.dart';
 import '../../models/scenario.dart';
 import '../../services/interfaces/i_api_service.dart';
 import '../../services/interfaces/i_revenuecat_service.dart';
@@ -43,6 +44,8 @@ class _ChatScreenState extends State<ChatScreen> {
   final List<Message> _messages = [];
   bool _isLoading = false;
   Scenario? _scenario;
+  // Raport oczekujący na nawigację (autosave 2A.3) — potrzebny przy retry.
+  Report? _pendingReport;
   // Faza rozmowy — startuje od wywiadu (intake); przejście do analyze jest
   // świadomą decyzją użytkownika. Stan lokalny, gubi się przy nawigacji.
   _ChatPhase _phase = _ChatPhase.intake;
@@ -195,9 +198,11 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   /// Zakończenie sesji: generuje raport (mode:"report" — 1 wywołanie LLM)
-  /// z kontekstu wypowiedzi użytkownika i nawiguje do ekranu raportu.
-  /// Raport jest przekazywany przez extra — ReportScreen renderuje go
-  /// dynamicznie (untrusted input, tekst).
+  /// z kontekstu wypowiedzi użytkownika, zapisuje sesję (autosave, 2A.3)
+  /// i nawiguje do ekranu raportu.
+  /// Bezpieczeństwo UX (warunek Operatora): jeżeli autosave nie powiedzie się,
+  /// użytkownik otrzymuje czytelną informację z możliwością ponowienia zapisu
+  /// albo bezpiecznej nawigacji z ostrzeżeniem. Brak cichego niepowodzenia.
   Future<void> _endSession() async {
     if (_isLoading) return;
     setState(() {
@@ -209,6 +214,17 @@ class _ChatScreenState extends State<ChatScreen> {
         context: _buildUserContext(),
       );
       if (!mounted) return;
+      _pendingReport = report;
+
+      // Autosave (2A.3): zapis sesji przez session-proxy. Niepowodzenie nie
+      // blokuje raportu — pokazujemy wybór: ponów albo przejdź bez zapisu.
+      final saved = await _tryAutosaveSession(report);
+      if (!mounted) return;
+      if (saved == false) {
+        final proceed = await _askSaveRetry();
+        if (!mounted) return;
+        if (!proceed) return; // dialog zakończony (retry lub anulowanie)
+      }
       context.go(AppRoutes.report, extra: report);
     } on RateLimitException catch (e) {
       if (!mounted) return;
@@ -229,6 +245,84 @@ class _ChatScreenState extends State<ChatScreen> {
         });
       }
     }
+  }
+
+  /// Próbuje zapisać sesję. Zwraca true = zapisano, false = nieudany,
+  /// null = brak potrzeby (np. tryb offline/mock bez zapisu? zawsze próbuje).
+  Future<bool?> _tryAutosaveSession(Report report) async {
+    try {
+      final statements = _messages
+          .where((m) => m.sender == 'user')
+          .map((m) => m.content.trim())
+          .where((c) => c.isNotEmpty)
+          .toList();
+      await _apiService.saveSession(
+        scenarioKey: _scenario?.id ?? '',
+        title: _scenario?.titleKey,
+        userStatements: statements,
+        report: report,
+      );
+      return true;
+    } on RateLimitException catch (e) {
+      if (mounted) _showChatError(e.message);
+      return false;
+    } on AuthException catch (e) {
+      if (mounted) _showChatError(e.message);
+      return false;
+    } on SessionUnavailableException catch (e) {
+      if (mounted) _showChatError(e.message);
+      return false;
+    } on ApiException catch (e) {
+      if (mounted) _showChatError(e.message);
+      return false;
+    } catch (_) {
+      if (mounted) _showChatError('Nie udało się zapisać sesji. Spróbuj ponownie.');
+      return false;
+    }
+  }
+
+  /// Dialog przy nieudanym autosave: ponów zapis albo przejdź bez zapisu.
+  /// Zwraca true, gdy użytkownik zdecydował kontynuować do raportu.
+  Future<bool> _askSaveRetry() async {
+    final l10n = AppLocalizations.of(context);
+    final choice = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.autosaveFailedTitle),
+        content: Text(l10n.autosaveFailedBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, 'retry'),
+            child: Text(l10n.autosaveRetry),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, 'proceed'),
+            child: Text(l10n.autosaveProceed),
+          ),
+        ],
+      ),
+    );
+    if (choice == 'retry') {
+      // Ponów zapis; przy kolejnym niepowodzeniu pokazujemy komunikat
+      // i pozwalamy bezpiecznie przejść (bez zapisu, z ostrzeżeniem).
+      final report = _pendingReport;
+      if (report != null) {
+        final saved = await _tryAutosaveSession(report);
+        if (saved == true) return true;
+      }
+      return _continueAfterFailedRetry();
+    }
+    return choice == 'proceed';
+  }
+
+  /// Po nieudanym ponowieniu zapisu: ostrzeżenie i kontynuacja do raportu
+  /// (bez zapisu — użytkownik świadomie wybrał). Brak cichego niepowodzenia.
+  bool _continueAfterFailedRetry() {
+    final l10n = AppLocalizations.of(context);
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(l10n.autosaveProceedWarning)));
+    return true;
   }
 
   @override

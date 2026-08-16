@@ -246,17 +246,119 @@ abstract class AppLocalizations {
   /// **'No report yet. End a session in chat to generate one.'**
   String get reportEmpty;
 
-  /// No description provided for @reportSaveHistory.
+  /// No description provided for @reportViewHistory.
   ///
   /// In en, this message translates to:
-  /// **'Save to history'**
-  String get reportSaveHistory;
+  /// **'View history'**
+  String get reportViewHistory;
 
   /// No description provided for @reportUnlockMore.
   ///
   /// In en, this message translates to:
   /// **'Unlock more'**
   String get reportUnlockMore;
+
+  /// No description provided for @homeHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved sessions'**
+  String get homeHistory;
+
+  /// No description provided for @homeHistoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get homeHistoryTitle;
+
+  /// No description provided for @homeHistorySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Open or delete your past sessions'**
+  String get homeHistorySubtitle;
+
+  /// No description provided for @historyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get historyTitle;
+
+  /// No description provided for @historyEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No saved sessions yet. End a chat session to save a report.'**
+  String get historyEmpty;
+
+  /// No description provided for @historyRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get historyRetry;
+
+  /// No description provided for @historyUntitled.
+  ///
+  /// In en, this message translates to:
+  /// **'Untitled session'**
+  String get historyUntitled;
+
+  /// No description provided for @historyDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete session'**
+  String get historyDeleteTitle;
+
+  /// No description provided for @historyDeleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'This permanently deletes the session and its report. This cannot be undone.'**
+  String get historyDeleteBody;
+
+  /// No description provided for @historyDeleteCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get historyDeleteCancel;
+
+  /// No description provided for @historyDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get historyDeleteConfirm;
+
+  /// No description provided for @historyDeleteTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete session'**
+  String get historyDeleteTooltip;
+
+  /// No description provided for @autosaveFailedTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not save session'**
+  String get autosaveFailedTitle;
+
+  /// No description provided for @autosaveFailedBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your report is ready, but saving to history failed. You can retry or continue without saving.'**
+  String get autosaveFailedBody;
+
+  /// No description provided for @autosaveRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get autosaveRetry;
+
+  /// No description provided for @autosaveProceed.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue without saving'**
+  String get autosaveProceed;
+
+  /// No description provided for @autosaveProceedWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Session was not saved to history.'**
+  String get autosaveProceedWarning;
 
   /// No description provided for @settingsTitle.
   ///

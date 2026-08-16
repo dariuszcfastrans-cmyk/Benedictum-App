@@ -80,13 +80,68 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get reportEmpty =>
-      'No report yet. End a session in chat to generate one.';
+      'Aucun rapport pour l\'instant. Terminez une session de chat pour en générer un.';
 
   @override
-  String get reportSaveHistory => 'Save to history';
+  String get reportViewHistory => 'Voir l\'historique';
 
   @override
-  String get reportUnlockMore => 'Unlock more';
+  String get reportUnlockMore => 'Débloquer plus';
+
+  @override
+  String get homeHistory => 'Sessions enregistrées';
+
+  @override
+  String get homeHistoryTitle => 'Historique';
+
+  @override
+  String get homeHistorySubtitle => 'Ouvrez ou supprimez vos sessions passées';
+
+  @override
+  String get historyTitle => 'Historique';
+
+  @override
+  String get historyEmpty =>
+      'Aucune session enregistrée. Terminez une session de chat pour enregistrer un rapport.';
+
+  @override
+  String get historyRetry => 'Réessayer';
+
+  @override
+  String get historyUntitled => 'Session sans titre';
+
+  @override
+  String get historyDeleteTitle => 'Supprimer la session';
+
+  @override
+  String get historyDeleteBody =>
+      'Cette action supprime définitivement la session et son rapport. Elle est irréversible.';
+
+  @override
+  String get historyDeleteCancel => 'Annuler';
+
+  @override
+  String get historyDeleteConfirm => 'Supprimer';
+
+  @override
+  String get historyDeleteTooltip => 'Supprimer la session';
+
+  @override
+  String get autosaveFailedTitle => 'Enregistrement impossible';
+
+  @override
+  String get autosaveFailedBody =>
+      'Votre rapport est prêt, mais son enregistrement a échoué. Réessayez ou continuez sans enregistrer.';
+
+  @override
+  String get autosaveRetry => 'Réessayer';
+
+  @override
+  String get autosaveProceed => 'Continuer sans enregistrer';
+
+  @override
+  String get autosaveProceedWarning =>
+      'La session n\'a pas été enregistrée dans l\'historique.';
 
   @override
   String get settingsTitle => 'Settings';

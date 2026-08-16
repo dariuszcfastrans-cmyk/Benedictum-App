@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 
 import '../features/auth/auth_screen.dart';
 import '../features/chat/chat_screen.dart';
+import '../features/history/history_screen.dart';
 import '../features/home/home_screen.dart';
 import '../features/report/report_screen.dart';
 import '../features/settings/settings_screen.dart';
@@ -15,6 +16,7 @@ abstract final class AppRoutes {
   static const String home = '/home';
   static const String chat = '/chat';
   static const String report = '/report';
+  static const String history = '/history';
   static const String settings = '/settings';
   static const String paywall = '/paywall';
 }
@@ -42,6 +44,10 @@ GoRouter createRouter() {
       GoRoute(
         path: AppRoutes.report,
         builder: (context, state) => const ReportScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.history,
+        builder: (context, state) => const HistoryScreen(),
       ),
       GoRoute(
         path: AppRoutes.settings,

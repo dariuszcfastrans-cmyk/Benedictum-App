@@ -83,10 +83,64 @@ class AppLocalizationsPl extends AppLocalizations {
       'Brak raportu. Zakończ sesję w czacie, aby go wygenerować.';
 
   @override
-  String get reportSaveHistory => 'Zapisz do historii';
+  String get reportViewHistory => 'Zobacz historię';
 
   @override
   String get reportUnlockMore => 'Odblokuj więcej';
+
+  @override
+  String get homeHistory => 'Zapisane sesje';
+
+  @override
+  String get homeHistoryTitle => 'Historia';
+
+  @override
+  String get homeHistorySubtitle => 'Otwórz lub usuń swoje wcześniejsze sesje';
+
+  @override
+  String get historyTitle => 'Historia';
+
+  @override
+  String get historyEmpty =>
+      'Brak zapisanych sesji. Zakończ sesję czatu, aby zapisać raport.';
+
+  @override
+  String get historyRetry => 'Spróbuj ponownie';
+
+  @override
+  String get historyUntitled => 'Sesja bez tytułu';
+
+  @override
+  String get historyDeleteTitle => 'Usuń sesję';
+
+  @override
+  String get historyDeleteBody =>
+      'Sesja i jej raport zostaną trwale usunięte. Tej operacji nie można cofnąć.';
+
+  @override
+  String get historyDeleteCancel => 'Anuluj';
+
+  @override
+  String get historyDeleteConfirm => 'Usuń';
+
+  @override
+  String get historyDeleteTooltip => 'Usuń sesję';
+
+  @override
+  String get autosaveFailedTitle => 'Nie udało się zapisać sesji';
+
+  @override
+  String get autosaveFailedBody =>
+      'Twój raport jest gotowy, ale zapis do historii nie powiódł się. Możesz ponowić zapis albo kontynuować bez zapisu.';
+
+  @override
+  String get autosaveRetry => 'Ponów zapis';
+
+  @override
+  String get autosaveProceed => 'Kontynuuj bez zapisu';
+
+  @override
+  String get autosaveProceedWarning => 'Sesja nie została zapisana w historii.';
 
   @override
   String get settingsTitle => 'Ustawienia';

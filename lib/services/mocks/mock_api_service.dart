@@ -1,8 +1,10 @@
 import 'dart:math';
 
+import '../../core/errors/app_exceptions.dart';
 import '../../models/message.dart';
 import '../../models/persona.dart';
 import '../../models/report.dart';
+import '../../models/session_summary.dart';
 import '../interfaces/i_api_service.dart';
 
 /// Mock serwisu API — Część C1.
@@ -12,6 +14,9 @@ class MockApiService implements IApiService {
   MockApiService();
 
   final Random _random = Random();
+
+  /// Lokalna, nietrwała pamięć zapisanych sesji (Fala 2A.3 — historia).
+  final List<SessionSummary> _savedSessions = [];
 
   /// Zwraca 3 odpowiedzi person (Krytyk, Optymista, Coach).
   /// Opóźnienie 500 ms per odpowiedź, symulowane lokalnie.
@@ -78,6 +83,67 @@ class MockApiService implements IApiService {
       case Persona.coach:
         return 'Dobry start. Na następny raz przygotuj jedną liczbę: szacowaną '
             'wielkość rynku. Przygotuję Cię, jak ją zaprezentować.';
+    }
+  }
+
+  /// Zapisuje sesję w lokalnej pamięci mocka (deterministyczne id).
+  @override
+  Future<String> saveSession({
+    required String scenarioKey,
+    String? title,
+    required List<String> userStatements,
+    required Report report,
+  }) async {
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    final id = 'mock_${_savedSessions.length + 1}';
+    _savedSessions.insert(
+      0,
+      SessionSummary(
+        id: id,
+        scenarioKey: scenarioKey,
+        title: title,
+        status: 'completed',
+        createdAt: DateTime.now(),
+        completedAt: DateTime.now(),
+      ),
+    );
+    return id;
+  }
+
+  /// Historia z lokalnej pamięci mocka (najnowsze pierwsze).
+  @override
+  Future<List<SessionSummary>> getSessionHistory() async {
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    return List.unmodifiable(_savedSessions);
+  }
+
+  /// Odczyt sesji + raport z lokalnej pamięci mocka.
+  /// Sesja nieistniejąca → SessionUnavailableException (odpowiednik 404).
+  @override
+  Future<(SessionSummary, Report?)> getSessionReport(String sessionId) async {
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    final session = _savedSessions
+        .where((s) => s.id == sessionId)
+        .firstOrNull;
+    if (session == null) {
+      throw SessionUnavailableException('Sesja jest niedostępna (404).');
+    }
+    return (session, const Report(
+      strengths: ['Mocna analiza (zapisana)'],
+      gaps: ['Ryzyko kosztów'],
+      actionItems: ['Weryfikacja liczb'],
+      overallRating: 4,
+    ));
+  }
+
+  /// Usuwa sesję z lokalnej pamięci mocka (symulacja kaskady).
+  @override
+  Future<void> deleteSession(String sessionId) async {
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    final before = _savedSessions.length;
+    _savedSessions.removeWhere((s) => s.id == sessionId);
+    if (_savedSessions.length == before) {
+      throw SessionUnavailableException('Sesja jest niedostępna (404).');
     }
   }
 }

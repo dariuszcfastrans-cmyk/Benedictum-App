@@ -83,10 +83,64 @@ class AppLocalizationsEn extends AppLocalizations {
       'No report yet. End a session in chat to generate one.';
 
   @override
-  String get reportSaveHistory => 'Save to history';
+  String get reportViewHistory => 'View history';
 
   @override
   String get reportUnlockMore => 'Unlock more';
+
+  @override
+  String get homeHistory => 'Saved sessions';
+
+  @override
+  String get homeHistoryTitle => 'History';
+
+  @override
+  String get homeHistorySubtitle => 'Open or delete your past sessions';
+
+  @override
+  String get historyTitle => 'History';
+
+  @override
+  String get historyEmpty =>
+      'No saved sessions yet. End a chat session to save a report.';
+
+  @override
+  String get historyRetry => 'Retry';
+
+  @override
+  String get historyUntitled => 'Untitled session';
+
+  @override
+  String get historyDeleteTitle => 'Delete session';
+
+  @override
+  String get historyDeleteBody =>
+      'This permanently deletes the session and its report. This cannot be undone.';
+
+  @override
+  String get historyDeleteCancel => 'Cancel';
+
+  @override
+  String get historyDeleteConfirm => 'Delete';
+
+  @override
+  String get historyDeleteTooltip => 'Delete session';
+
+  @override
+  String get autosaveFailedTitle => 'Could not save session';
+
+  @override
+  String get autosaveFailedBody =>
+      'Your report is ready, but saving to history failed. You can retry or continue without saving.';
+
+  @override
+  String get autosaveRetry => 'Retry';
+
+  @override
+  String get autosaveProceed => 'Continue without saving';
+
+  @override
+  String get autosaveProceedWarning => 'Session was not saved to history.';
 
   @override
   String get settingsTitle => 'Settings';

@@ -28,3 +28,14 @@ class RateLimitException implements Exception {
   @override
   String toString() => 'RateLimitException: $message';
 }
+
+/// Sesja z historii jest niedostępna: 404 (obca/nieistniejąca/poza retencją)
+/// lub błąd ownership. UI nie pokazuje pustego ekranu ani crasha — pokazuje
+/// komunikat i pozwala wrócić do historii.
+class SessionUnavailableException implements Exception {
+  final String message;
+  SessionUnavailableException(this.message);
+
+  @override
+  String toString() => 'SessionUnavailableException: $message';
+}

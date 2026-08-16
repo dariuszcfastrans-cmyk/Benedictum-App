@@ -48,9 +48,9 @@ class ReportScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
                 FilledButton.icon(
-                  onPressed: () => context.go(AppRoutes.home),
-                  icon: const Icon(Icons.save),
-                  label: Text(l10n.reportSaveHistory),
+                  onPressed: () => context.go(AppRoutes.history),
+                  icon: const Icon(Icons.history),
+                  label: Text(l10n.reportViewHistory),
                 ),
                 const SizedBox(height: 12),
                 OutlinedButton(

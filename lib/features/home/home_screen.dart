@@ -41,6 +41,21 @@ class HomeScreen extends StatelessWidget {
               onTap: () => context.go(AppRoutes.chat, extra: scenario),
             ),
           ),
+          const SizedBox(height: 16),
+          Text(
+            l10n.homeHistory,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 12),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.history),
+              title: Text(l10n.homeHistoryTitle),
+              subtitle: Text(l10n.homeHistorySubtitle),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.go(AppRoutes.history),
+            ),
+          ),
         ],
       ),
     );

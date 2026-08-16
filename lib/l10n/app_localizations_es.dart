@@ -80,13 +80,68 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get reportEmpty =>
-      'No report yet. End a session in chat to generate one.';
+      'Aún no hay informe. Finaliza una sesión en el chat para generar uno.';
 
   @override
-  String get reportSaveHistory => 'Save to history';
+  String get reportViewHistory => 'Ver historial';
 
   @override
-  String get reportUnlockMore => 'Unlock more';
+  String get reportUnlockMore => 'Desbloquear más';
+
+  @override
+  String get homeHistory => 'Sesiones guardadas';
+
+  @override
+  String get homeHistoryTitle => 'Historial';
+
+  @override
+  String get homeHistorySubtitle => 'Abre o elimina tus sesiones anteriores';
+
+  @override
+  String get historyTitle => 'Historial';
+
+  @override
+  String get historyEmpty =>
+      'Aún no hay sesiones guardadas. Finaliza una sesión de chat para guardar un informe.';
+
+  @override
+  String get historyRetry => 'Reintentar';
+
+  @override
+  String get historyUntitled => 'Sesión sin título';
+
+  @override
+  String get historyDeleteTitle => 'Eliminar sesión';
+
+  @override
+  String get historyDeleteBody =>
+      'Esto elimina permanentemente la sesión y su informe. No se puede deshacer.';
+
+  @override
+  String get historyDeleteCancel => 'Cancelar';
+
+  @override
+  String get historyDeleteConfirm => 'Eliminar';
+
+  @override
+  String get historyDeleteTooltip => 'Eliminar sesión';
+
+  @override
+  String get autosaveFailedTitle => 'No se pudo guardar la sesión';
+
+  @override
+  String get autosaveFailedBody =>
+      'Tu informe está listo, pero no se pudo guardar en el historial. Puedes reintentar o continuar sin guardar.';
+
+  @override
+  String get autosaveRetry => 'Reintentar';
+
+  @override
+  String get autosaveProceed => 'Continuar sin guardar';
+
+  @override
+  String get autosaveProceedWarning =>
+      'La sesión no se guardó en el historial.';
 
   @override
   String get settingsTitle => 'Settings';
