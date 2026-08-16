@@ -234,6 +234,18 @@ abstract class AppLocalizations {
   /// **'Tips'**
   String get reportTips;
 
+  /// No description provided for @reportRating.
+  ///
+  /// In en, this message translates to:
+  /// **'Overall rating'**
+  String get reportRating;
+
+  /// No description provided for @reportEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No report yet. End a session in chat to generate one.'**
+  String get reportEmpty;
+
   /// No description provided for @reportSaveHistory.
   ///
   /// In en, this message translates to:

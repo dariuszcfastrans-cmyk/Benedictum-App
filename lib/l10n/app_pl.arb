@@ -22,6 +22,8 @@
   "reportStrengths": "Mocne strony",
   "reportRisks": "Luki i ryzyka",
   "reportTips": "Wskazówki",
+  "reportRating": "Ocena ogólna",
+  "reportEmpty": "Brak raportu. Zakończ sesję w czacie, aby go wygenerować.",
   "reportSaveHistory": "Zapisz do historii",
   "reportUnlockMore": "Odblokuj więcej",
   "settingsTitle": "Ustawienia",

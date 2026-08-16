@@ -1,4 +1,5 @@
 import '../../models/message.dart';
+import '../../models/report.dart';
 
 /// Interfejs serwisu API rady doradczej (persony + Gemini).
 /// Implementacja mockowa w C1 (offline); Edge Function + Gemini w C2.
@@ -12,5 +13,13 @@ abstract interface class IApiService {
     required String scenario,
     String? context,
     String? mode,
+  });
+
+  /// Generuje raport końcowy sesji (mode:"report" — 1 wywołanie LLM).
+  /// [scenario] — identyfikator scenariusza.
+  /// [context] — wypowiedzi użytkownika (USER_STATEMENT) zebrane w sesji.
+  Future<Report> getReport({
+    required String scenario,
+    required String context,
   });
 }

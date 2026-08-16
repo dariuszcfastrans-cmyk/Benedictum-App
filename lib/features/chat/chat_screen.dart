@@ -194,6 +194,43 @@ class _ChatScreenState extends State<ChatScreen> {
     });
   }
 
+  /// Zakończenie sesji: generuje raport (mode:"report" — 1 wywołanie LLM)
+  /// z kontekstu wypowiedzi użytkownika i nawiguje do ekranu raportu.
+  /// Raport jest przekazywany przez extra — ReportScreen renderuje go
+  /// dynamicznie (untrusted input, tekst).
+  Future<void> _endSession() async {
+    if (_isLoading) return;
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      final report = await _apiService.getReport(
+        scenario: _scenario?.id ?? '',
+        context: _buildUserContext(),
+      );
+      if (!mounted) return;
+      context.go(AppRoutes.report, extra: report);
+    } on RateLimitException catch (e) {
+      if (!mounted) return;
+      _showChatError(e.message);
+    } on AuthException catch (e) {
+      if (!mounted) return;
+      _showChatError(e.message);
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      _showChatError(e.message);
+    } catch (_) {
+      if (!mounted) return;
+      _showChatError('Nieznany błąd. Spróbuj ponownie.');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -204,7 +241,7 @@ class _ChatScreenState extends State<ChatScreen> {
         title: Text(title),
         actions: [
           TextButton(
-            onPressed: () => context.go(AppRoutes.report),
+            onPressed: _isLoading ? null : _endSession,
             child: Text(l10n.chatEndSession),
           ),
         ],

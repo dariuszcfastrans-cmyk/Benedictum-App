@@ -76,6 +76,13 @@ class AppLocalizationsFr extends AppLocalizations {
   String get reportTips => 'Tips';
 
   @override
+  String get reportRating => 'Overall rating';
+
+  @override
+  String get reportEmpty =>
+      'No report yet. End a session in chat to generate one.';
+
+  @override
   String get reportSaveHistory => 'Save to history';
 
   @override

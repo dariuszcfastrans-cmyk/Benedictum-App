@@ -424,3 +424,9 @@ enabled = true
 verify_jwt = true
 # Limity wywołań — 5 req/min realizowane przez RPC check_rate_limit (nie przez ten limit).
 enabled = true
+
+[functions.session-proxy]
+# Walidacja JWT przez platformę Supabase (401 przed kodem funkcji) — wzorzec Gate 0.
+# Osobna funkcja (Nota N2): persistencja sesji/raportów, BEZ LLM (Q3).
+verify_jwt = true
+enabled = true

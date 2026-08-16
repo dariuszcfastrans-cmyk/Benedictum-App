@@ -8,7 +8,7 @@
 //  - Komunikaty błędów sanityzowane: bez kluczy API, tokenów JWT, ścieżek wewnętrznych.
 import { createClient } from "jsr:@supabase/supabase-js@2";
 // Source of truth promptów (D1): prompts/ — klient nie przechowuje treści promptów.
-import { PERSONAS, renderSystemPrompt } from "./prompts/index.ts";
+import { PERSONAS, renderSystemPrompt, renderReportPrompt, parseReport } from "./prompts/index.ts";
 const CORS_ORIGINS = (()=>{
   // Domyślnie tylko lokalny dev web (flutter run -d chrome).
   const raw = Deno.env.get("CORS_ORIGINS") ?? "http://localhost:8899,http://localhost:3000";
@@ -91,6 +91,53 @@ async function callGemini(persona, userMessage, scenario, options) {
   if (!text) throw new ApiUpstreamError(422, "EMPTY_RESPONSE");
   return text;
 }
+// Wywołanie Gemini dla raportu końcowego (mode:"report") — 1 wywołanie LLM.
+async function callGeminiReport(scenario, context) {
+  const model = Deno.env.get("GEMINI_MODEL") ?? "gemini-2.5-flash";
+  const url = `${GEMINI_API_URL}/${model}:generateContent`;
+  const systemText = renderReportPrompt(scenario, context);
+  const payload = {
+    system_instruction: {
+      parts: [
+        {
+          text: systemText
+        }
+      ]
+    },
+    contents: [
+      {
+        role: "user",
+        parts: [
+          {
+            text: "Wygeneruj raport końcowy sesji."
+          }
+        ]
+      }
+    ],
+    generationConfig: {
+      temperature: 0.4,
+      maxOutputTokens: 800
+    }
+  };
+  const res = await fetch(`${url}?key=${GEMINI_API_KEY}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) {
+    if (res.status === 429) throw new ApiUpstreamError(429, "GEMINI_RATE_LIMITED");
+    if (res.status === 400 || res.status === 403) throw new ApiUpstreamError(503, "QUOTA_EXHAUSTED");
+    throw new ApiUpstreamError(503, "GEMINI_UPSTREAM_ERROR");
+  }
+  const data = await res.json();
+  const text = data?.candidates?.[0]?.content?.parts?.map((p)=>p.text ?? "").join("\n").trim();
+  if (!text) throw new ApiUpstreamError(422, "EMPTY_RESPONSE");
+  const report = parseReport(text);
+  if (!report) throw new ApiUpstreamError(422, "INVALID_REPORT");
+  return report;
+}
 class ApiUpstreamError extends Error {
   status;
   code;
@@ -100,10 +147,24 @@ class ApiUpstreamError extends Error {
     this.code = code;
   }
 }
-// Walidacja body: { persona?, message, scenario }.
+// Walidacja body: { persona?, message, scenario } / { mode:"report", scenario, context }.
 function validateBody(body) {
   if (!body || typeof body !== "object") throw new ApiUpstreamError(422, "INVALID_JSON");
   const b = body;
+  // Tryb "report": raport generowany z kontekstu sesji (scenario + context).
+  if (b.mode === "report") {
+    if (typeof b.scenario !== "string" || b.scenario.trim().length === 0) {
+      throw new ApiUpstreamError(422, "MISSING_SCENARIO");
+    }
+    if (typeof b.context !== "string" || b.context.trim().length === 0) {
+      throw new ApiUpstreamError(422, "MISSING_CONTEXT");
+    }
+    return {
+      mode: "report",
+      scenario: b.scenario.trim(),
+      context: b.context.trim()
+    };
+  }
   if (typeof b.message !== "string" || b.message.trim().length === 0) {
     throw new ApiUpstreamError(422, "MISSING_MESSAGE");
   }
@@ -199,7 +260,15 @@ Deno.serve(async (req)=>{
         error: code
       }, e instanceof ApiUpstreamError ? e.status : 422, headers);
     }
-    // Wykonanie Gemini. Tryb "intake" prowadzi wyłącznie Coach.
+    // Wykonanie Gemini. Tryb "report": 1 wywołanie LLM → raport + walidacja kontraktu.
+    if (body.mode === "report") {
+      const report = await callGeminiReport(body.scenario, body.context);
+      return json({
+        report,
+        remaining: rpc?.remaining ?? 0
+      }, 200, headers);
+    }
+    // Tryb "intake" prowadzi wyłącznie Coach.
     const targets = body.mode === "intake"
       ? PERSONAS.filter((p)=>p.senderId === "coach")
       : body.persona

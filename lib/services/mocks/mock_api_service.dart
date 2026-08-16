@@ -2,6 +2,7 @@ import 'dart:math';
 
 import '../../models/message.dart';
 import '../../models/persona.dart';
+import '../../models/report.dart';
 import '../interfaces/i_api_service.dart';
 
 /// Mock serwisu API — Część C1.
@@ -38,6 +39,31 @@ class MockApiService implements IApiService {
     }
 
     return responses;
+  }
+
+  /// Generuje deterministyczny raport offline (kontrakt Dyrektywy 2A §3).
+  /// Opóźnienie 500 ms symulowane lokalnie — spójne z getPersonaResponses.
+  @override
+  Future<Report> getReport({
+    required String scenario,
+    required String context,
+  }) async {
+    await Future<void>.delayed(const Duration(milliseconds: 500));
+    return const Report(
+      strengths: [
+        'Jasna wizja produktu',
+        'Znajomość odbiorcy',
+      ],
+      gaps: [
+        'Brak twardych liczb rynkowych',
+        'Niedoprecyzowany model płatności',
+      ],
+      actionItems: [
+        'Przygotuj jedną liczbę rynku',
+        'Odpowiedz na pytanie „kto już to zrobił?"',
+      ],
+      overallRating: 4,
+    );
   }
 
   /// Hardcoded odpowiedzi mockowe — w części C2 zastąpione prawdziwym wywołaniem.

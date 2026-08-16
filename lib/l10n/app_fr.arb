@@ -22,6 +22,8 @@
   "reportStrengths": "Strengths",
   "reportRisks": "Gaps and risks",
   "reportTips": "Tips",
+  "reportRating": "Overall rating",
+  "reportEmpty": "No report yet. End a session in chat to generate one.",
   "reportSaveHistory": "Save to history",
   "reportUnlockMore": "Unlock more",
   "settingsTitle": "Settings",

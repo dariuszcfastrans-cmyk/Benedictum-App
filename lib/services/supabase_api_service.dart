@@ -3,6 +3,7 @@ import 'package:supabase_flutter/supabase_flutter.dart' hide AuthException;
 import '../core/errors/app_exceptions.dart';
 import '../models/message.dart';
 import '../models/persona.dart';
+import '../models/report.dart';
 import 'interfaces/i_api_service.dart';
 
 /// Implementacja IApiService na Supabase Edge Function (Część C2).
@@ -55,6 +56,40 @@ class SupabaseApiService implements IApiService {
         }
       }
       return messages;
+    } on FunctionException catch (e) {
+      throw _mapFunctionException(e);
+    } on ApiException {
+      rethrow;
+    } on AuthException {
+      rethrow;
+    } catch (e) {
+      throw ApiException('Błąd komunikacji z serwerem: ${e.runtimeType}');
+    }
+  }
+
+  /// Generuje raport końcowy sesji (mode:"report" — 1 wywołanie LLM).
+  /// Odpowiedź JSON: { report: { strengths, gaps, action_items, overall_rating } }.
+  @override
+  Future<Report> getReport({
+    required String scenario,
+    required String context,
+  }) async {
+    try {
+      final response = await _functions.invoke(
+        _llmFunctionName,
+        body: {
+          'mode': 'report',
+          'scenario': scenario,
+          'context': context,
+        },
+      );
+
+      final data = (response.data as Map?) ?? const <String, dynamic>{};
+      final reportJson = data['report'];
+      if (reportJson is! Map) {
+        throw ApiException('Nieprawidłowy format raportu (422).');
+      }
+      return Report.fromJson(Map<String, dynamic>.from(reportJson));
     } on FunctionException catch (e) {
       throw _mapFunctionException(e);
     } on ApiException {

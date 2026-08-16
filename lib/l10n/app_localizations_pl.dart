@@ -76,6 +76,13 @@ class AppLocalizationsPl extends AppLocalizations {
   String get reportTips => 'Wskazówki';
 
   @override
+  String get reportRating => 'Ocena ogólna';
+
+  @override
+  String get reportEmpty =>
+      'Brak raportu. Zakończ sesję w czacie, aby go wygenerować.';
+
+  @override
   String get reportSaveHistory => 'Zapisz do historii';
 
   @override

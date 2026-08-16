@@ -66,4 +66,32 @@ void main() {
     expect(find.textContaining('Optymista'), findsOneWidget);
     expect(find.textContaining('Coach'), findsWidgets);
   });
+
+  testWidgets('Czat: „Zakończ sesję" generuje raport i otwiera dynamiczny ReportScreen',
+      (tester) async {
+    await _navigateToChat(tester);
+
+    // Intake: zbierzemy przynajmniej jedną wypowiedź użytkownika.
+    await tester.enterText(find.byType(TextField), 'Mam gotowe MVP.');
+    await tester.tap(find.text('Wyślij'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 800));
+
+    // „Zakończ sesję" → getReport (mock 500 ms) → ReportScreen z raportem.
+    await tester.tap(find.text('Zakończ sesję'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 800));
+    await tester.pumpAndSettle();
+
+    // Dynamiczny raport: sekcje i ocena z kontraktu (Fala 2A).
+    expect(find.text('Raport'), findsOneWidget);
+    expect(find.text('Ocena ogólna'), findsOneWidget);
+    expect(find.text('4/5'), findsOneWidget);
+    expect(find.text('Mocne strony'), findsOneWidget);
+    expect(find.text('Luki i ryzyka'), findsOneWidget);
+    expect(find.text('Wskazówki'), findsOneWidget);
+    expect(find.textContaining('Jasna wizja produktu'), findsOneWidget);
+    expect(find.textContaining('Brak twardych liczb'), findsOneWidget);
+    expect(find.textContaining('Przygotuj jedną liczbę'), findsOneWidget);
+  });
 }

@@ -8,6 +8,8 @@ import { createClient } from "jsr:@supabase/supabase-js@2";
 import {
   PERSONAS,
   renderSystemPrompt,
+  renderReportPrompt,
+  parseReport,
   type PromptMode,
 } from "../gemini-proxy/prompts/index.ts";
 
@@ -58,11 +60,42 @@ class ApiUpstreamError extends Error {
   }
 }
 
-function validateBody(body: unknown) {
+/// Walidowane body dla trybów rozmowy (intake/analyze).
+type ChatBody = {
+  mode: "intake" | "analyze";
+  persona?: string;
+  message: string;
+  scenario: string;
+  context?: string;
+};
+
+/// Walidowane body dla trybu raportu (mode:"report").
+type ReportBody = {
+  mode: "report";
+  scenario: string;
+  context: string;
+};
+
+function validateBody(body: unknown): ChatBody | ReportBody {
   if (!body || typeof body !== "object") {
     throw new ApiUpstreamError(422, "INVALID_JSON");
   }
   const b = body as Record<string, unknown>;
+
+  // Tryb "report": raport generowany z kontekstu sesji (scenario + context).
+  if (b.mode === "report") {
+    if (typeof b.scenario !== "string" || b.scenario.trim().length === 0) {
+      throw new ApiUpstreamError(422, "MISSING_SCENARIO");
+    }
+    if (typeof b.context !== "string" || b.context.trim().length === 0) {
+      throw new ApiUpstreamError(422, "MISSING_CONTEXT");
+    }
+    return {
+      mode: "report",
+      scenario: b.scenario.trim(),
+      context: b.context.trim(),
+    };
+  }
 
   if (typeof b.message !== "string" || b.message.trim().length === 0) {
     throw new ApiUpstreamError(422, "MISSING_MESSAGE");
@@ -89,8 +122,80 @@ function validateBody(body: unknown) {
     message: b.message.trim(),
     scenario: b.scenario.trim(),
     context: typeof b.context === "string" ? b.context.trim() : undefined,
-    mode: (b.mode === "intake" ? "intake" : "analyze") as PromptMode,
+    mode: (b.mode === "intake" ? "intake" : "analyze"),
   };
+}
+
+/// Wywołanie OpenRouter dla raportu końcowego (mode:"report") — 1 wywołanie LLM.
+async function callOpenRouterReport(
+  scenario: string,
+  context: string,
+  userId: string,
+) {
+  const openRouterKey = Deno.env.get("OPENROUTER_API_KEY") ?? "";
+  if (!openRouterKey) {
+    throw new ApiUpstreamError(503, "OPENROUTER_NOT_CONFIGURED");
+  }
+
+  const models = (Deno.env.get("OPENROUTER_MODEL") ?? "openrouter/free")
+    .split(",")
+    .map((m) => m.trim())
+    .filter((m) => m.length > 0);
+
+  const systemText = renderReportPrompt(scenario, context);
+  const payload = (model: string) => ({
+    model,
+    messages: [
+      { role: "system", content: systemText },
+      { role: "user", content: "Wygeneruj raport końcowy sesji." },
+    ],
+    temperature: 0.4,
+    max_tokens: 800,
+    user: userId,
+  });
+
+  let lastError: ApiUpstreamError | null = null;
+  for (const model of models) {
+    const res = await fetch(OPENROUTER_API_URL, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${openRouterKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload(model)),
+    });
+
+    if (res.ok) {
+      const text = await extractContent(res);
+      const report = parseReport(text);
+      if (!report) throw new ApiUpstreamError(422, "INVALID_REPORT");
+      return report;
+    }
+
+    if (res.status === 429) {
+      throw new ApiUpstreamError(429, "OPENROUTER_RATE_LIMITED");
+    }
+    if (res.status === 404) {
+      lastError = new ApiUpstreamError(
+        503,
+        `OPENROUTER_MODEL_OR_POLICY_BLOCKED:${model}`,
+      );
+      continue;
+    }
+    if ([400, 401, 402, 403].includes(res.status)) {
+      lastError = new ApiUpstreamError(
+        503,
+        `OPENROUTER_CREDENTIALS_OR_QUOTA:${model}`,
+      );
+      continue;
+    }
+    lastError = new ApiUpstreamError(
+      503,
+      `OPENROUTER_UPSTREAM_ERROR:${model}`,
+    );
+  }
+
+  throw lastError ?? new ApiUpstreamError(503, "OPENROUTER_NO_MODELS");
 }
 
 async function callOpenRouter(
@@ -245,6 +350,16 @@ Deno.serve(async (req) => {
     } catch (e) {
       const code = e instanceof ApiUpstreamError ? e.code : "INVALID_JSON";
       return json({ error: code }, e instanceof ApiUpstreamError ? e.status : 422, headers);
+    }
+
+    // Tryb "report": 1 wywołanie LLM → raport + walidacja kontraktu.
+    if (body.mode === "report") {
+      const report = await callOpenRouterReport(
+        body.scenario,
+        body.context,
+        userId,
+      );
+      return json({ report, remaining: rpc?.remaining ?? 0 }, 200, headers);
     }
 
     // Tryb "intake" prowadzi wyłącznie Coach; "analyze" (domyślny) analizuje

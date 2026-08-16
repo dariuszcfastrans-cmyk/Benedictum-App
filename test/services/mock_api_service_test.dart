@@ -64,5 +64,20 @@ void main() {
         'coach',
       });
     });
+
+    test('getReport zwraca kompletny kontrakt raportu (Fala 2A)', () async {
+      final service = MockApiService();
+
+      final report = await service.getReport(
+        scenario: 'pitch',
+        context: 'USER_STATEMENT 1: Mam gotowe MVP.',
+      );
+
+      expect(report.strengths, isNotEmpty);
+      expect(report.gaps, isNotEmpty);
+      expect(report.actionItems, isNotEmpty);
+      expect(report.overallRating, inInclusiveRange(1, 5));
+      expect(report.strengths.every((s) => s.isNotEmpty), isTrue);
+    });
   });
 }

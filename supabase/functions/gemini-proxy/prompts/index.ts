@@ -9,12 +9,14 @@
 // Tryby (mode):
 //  - "intake"  → Coach prowadzący wywiad (coach_intake_prompt).
 //  - "analyze" → standardowa analiza person (domyślny).
+//  - "report"  → raport końcowy sesji (report_prompt) — 1 wywołanie LLM.
 // routing wybiera prompt na podstawie mode + persona.
 
 import { systemPrompt as criticPrompt, maxSentences as criticMax, personaName as criticName } from "./critic_prompt.ts";
 import { systemPrompt as optimistPrompt, maxSentences as optimistMax, personaName as optimistName } from "./optimist_prompt.ts";
 import { systemPrompt as coachPrompt, maxSentences as coachMax, personaName as coachName } from "./coach_prompt.ts";
 import { systemPrompt as coachIntakePrompt } from "./coach_intake_prompt.ts";
+import { systemPrompt as reportSystemPrompt } from "./report_prompt.ts";
 
 export type PersonaPrompt = {
   senderId: string;
@@ -30,7 +32,7 @@ export const PERSONAS: PersonaPrompt[] = [
 ];
 
 /// Dozwolone tryby rozmowy.
-export type PromptMode = "intake" | "analyze";
+export type PromptMode = "intake" | "analyze" | "report";
 
 /// Opcje renderowania promptu.
 export type RenderOptions = {
@@ -88,4 +90,58 @@ export function renderSystemPrompt(
   }
 
   return out;
+}
+
+/// Interpolacja promptu raportu: {scenario} i {context} (escape'owane).
+export function renderReportPrompt(scenario: string, context: string): string {
+  let out = reportSystemPrompt
+    .replaceAll("{scenario}", escapeXml(scenario))
+    .replaceAll("{context}", escapeXml(context));
+  // Usuń ewentualne nieobsłużone placeholdery (defensywnie).
+  out = out.replaceAll("{scenario}", "").replaceAll("{context}", "");
+  return out;
+}
+
+/// Kontrakt raportu (Dyrektywa 2A §3).
+export type ReportContract = {
+  strengths: string[];
+  gaps: string[];
+  action_items: string[];
+  overall_rating: number;
+};
+
+/// Walidacja odpowiedzi raportu. Zwraca kontrakt albo null (422 INVALID_REPORT).
+/// overall_rating musi być liczbą całkowitą 1–5; tablice — tablicami stringów.
+export function parseReport(text: string): ReportContract | null {
+  const trimmed = text.trim();
+  if (!trimmed) return null;
+  // Usuń ewentualne ramki markdown ```json ... ```.
+  const json = trimmed.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
+  let data: unknown;
+  try {
+    data = JSON.parse(json);
+  } catch {
+    return null;
+  }
+  if (typeof data !== "object" || data === null || Array.isArray(data)) return null;
+  const obj = data as Record<string, unknown>;
+  if (!Array.isArray(obj.strengths) || !obj.strengths.every((s) => typeof s === "string")) {
+    return null;
+  }
+  if (!Array.isArray(obj.gaps) || !obj.gaps.every((s) => typeof s === "string")) {
+    return null;
+  }
+  if (!Array.isArray(obj.action_items) || !obj.action_items.every((s) => typeof s === "string")) {
+    return null;
+  }
+  const rating = obj.overall_rating;
+  if (typeof rating !== "number" || !Number.isInteger(rating) || rating < 1 || rating > 5) {
+    return null;
+  }
+  return {
+    strengths: obj.strengths as string[],
+    gaps: obj.gaps as string[],
+    action_items: obj.action_items as string[],
+    overall_rating: rating,
+  };
 }
