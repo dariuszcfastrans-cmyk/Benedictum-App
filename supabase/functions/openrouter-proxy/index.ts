@@ -151,6 +151,7 @@ async function callOpenRouterReport(
     ],
     temperature: 0.4,
     max_tokens: 800,
+    reasoning: { enabled: false },
     user: userId,
   });
 
@@ -228,6 +229,7 @@ async function callOpenRouter(
     ],
     temperature: 0.7,
     max_tokens: 300,
+    reasoning: { enabled: false },
     user: userId,
   });
 
