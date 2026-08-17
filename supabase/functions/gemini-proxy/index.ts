@@ -9,6 +9,8 @@
 import { createClient } from "jsr:@supabase/supabase-js@2";
 // Source of truth promptów (D1): prompts/ — klient nie przechowuje treści promptów.
 import { PERSONAS, renderSystemPrompt, renderReportPrompt, parseReport } from "./prompts/index.ts";
+// Backoff (G.2): Retry-After / retry_after_seconds — izolowany moduł tego providera.
+import { extractRetryAfter } from "./backoff.ts";
 const CORS_ORIGINS = (()=>{
   // Domyślnie tylko lokalny dev web (flutter run -d chrome).
   const raw = Deno.env.get("CORS_ORIGINS") ?? "http://localhost:8899,http://localhost:3000";
@@ -44,8 +46,10 @@ function safeErrorMessage(e) {
 }
 // Wywołanie Gemini dla pojedynczej persony.
 async function callGemini(persona, userMessage, scenario, options) {
-  const model = Deno.env.get("GEMINI_MODEL") ?? "gemini-2.5-flash";
-  const url = `${GEMINI_API_URL}/${model}:generateContent`;
+  // G.2: GEMINI_MODEL może być listą rozdzieloną przecinkami — przy 429
+  // próbujemy kolejny model z listy, zamiast kończyć całą ścieżkę.
+  const models = (Deno.env.get("GEMINI_MODEL") ?? "gemini-2.5-flash")
+    .split(",").map((m) => m.trim()).filter((m) => m.length > 0);
   // System prompt: interpolacja z escape'em delimiterów — user_input nigdy surowo.
   const systemText = renderSystemPrompt(persona, scenario, userMessage, {
     context: options?.context,
@@ -74,27 +78,40 @@ async function callGemini(persona, userMessage, scenario, options) {
       maxOutputTokens: 300
     }
   };
-  const res = await fetch(`${url}?key=${GEMINI_API_KEY}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(payload)
-  });
-  if (!res.ok) {
-    if (res.status === 429) throw new ApiUpstreamError(429, "GEMINI_RATE_LIMITED");
-    if (res.status === 400 || res.status === 403) throw new ApiUpstreamError(503, "QUOTA_EXHAUSTED");
-    throw new ApiUpstreamError(503, "GEMINI_UPSTREAM_ERROR");
+  let lastError = null;
+  for (const model of models) {
+    const url = `${GEMINI_API_URL}/${model}:generateContent`;
+    const res = await fetch(`${url}?key=${GEMINI_API_KEY}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const text = data?.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("\n").trim();
+      if (!text) throw new ApiUpstreamError(422, "EMPTY_RESPONSE");
+      return text;
+    }
+    if (res.status === 429) {
+      lastError = new ApiUpstreamError(429, "GEMINI_RATE_LIMITED", extractRetryAfter(res));
+      continue;
+    }
+    if (res.status === 400 || res.status === 403) {
+      lastError = new ApiUpstreamError(503, "QUOTA_EXHAUSTED");
+      continue;
+    }
+    lastError = new ApiUpstreamError(503, "GEMINI_UPSTREAM_ERROR");
   }
-  const data = await res.json();
-  const text = data?.candidates?.[0]?.content?.parts?.map((p)=>p.text ?? "").join("\n").trim();
-  if (!text) throw new ApiUpstreamError(422, "EMPTY_RESPONSE");
-  return text;
+  throw lastError ?? new ApiUpstreamError(503, "GEMINI_NO_MODELS");
 }
 // Wywołanie Gemini dla raportu końcowego (mode:"report") — 1 wywołanie LLM.
 async function callGeminiReport(scenario, context) {
-  const model = Deno.env.get("GEMINI_MODEL") ?? "gemini-2.5-flash";
-  const url = `${GEMINI_API_URL}/${model}:generateContent`;
+  // G.2: GEMINI_MODEL może być listą rozdzieloną przecinkami — przy 429
+  // próbujemy kolejny model z listy, zamiast kończyć całą ścieżkę.
+  const models = (Deno.env.get("GEMINI_MODEL") ?? "gemini-2.5-flash")
+    .split(",").map((m) => m.trim()).filter((m) => m.length > 0);
   const systemText = renderReportPrompt(scenario, context);
   const payload = {
     system_instruction: {
@@ -119,32 +136,45 @@ async function callGeminiReport(scenario, context) {
       maxOutputTokens: 800
     }
   };
-  const res = await fetch(`${url}?key=${GEMINI_API_KEY}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(payload)
-  });
-  if (!res.ok) {
-    if (res.status === 429) throw new ApiUpstreamError(429, "GEMINI_RATE_LIMITED");
-    if (res.status === 400 || res.status === 403) throw new ApiUpstreamError(503, "QUOTA_EXHAUSTED");
-    throw new ApiUpstreamError(503, "GEMINI_UPSTREAM_ERROR");
+  let lastError = null;
+  for (const model of models) {
+    const url = `${GEMINI_API_URL}/${model}:generateContent`;
+    const res = await fetch(`${url}?key=${GEMINI_API_KEY}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const text = data?.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("\n").trim();
+      if (!text) throw new ApiUpstreamError(422, "EMPTY_RESPONSE");
+      const report = parseReport(text);
+      if (!report) throw new ApiUpstreamError(422, "INVALID_REPORT");
+      return report;
+    }
+    if (res.status === 429) {
+      lastError = new ApiUpstreamError(429, "GEMINI_RATE_LIMITED", extractRetryAfter(res));
+      continue;
+    }
+    if (res.status === 400 || res.status === 403) {
+      lastError = new ApiUpstreamError(503, "QUOTA_EXHAUSTED");
+      continue;
+    }
+    lastError = new ApiUpstreamError(503, "GEMINI_UPSTREAM_ERROR");
   }
-  const data = await res.json();
-  const text = data?.candidates?.[0]?.content?.parts?.map((p)=>p.text ?? "").join("\n").trim();
-  if (!text) throw new ApiUpstreamError(422, "EMPTY_RESPONSE");
-  const report = parseReport(text);
-  if (!report) throw new ApiUpstreamError(422, "INVALID_REPORT");
-  return report;
+  throw lastError ?? new ApiUpstreamError(503, "GEMINI_NO_MODELS");
 }
 class ApiUpstreamError extends Error {
   status;
   code;
-  constructor(status, code){
+  retryAfterSeconds;
+  constructor(status, code, retryAfterSeconds){
     super(code);
     this.status = status;
     this.code = code;
+    this.retryAfterSeconds = retryAfterSeconds;
   }
 }
 // Walidacja body: { persona?, message, scenario } / { mode:"report", scenario, context }.
@@ -288,6 +318,12 @@ Deno.serve(async (req)=>{
     }, 200, headers);
   } catch (e) {
     if (e instanceof ApiUpstreamError) {
+      if (e.status === 429) {
+        return json({
+          error: e.code,
+          retry_after_seconds: e.retryAfterSeconds ?? 60
+        }, 429, headers);
+      }
       return json({
         error: e.code
       }, e.status, headers);
