@@ -5,6 +5,7 @@
 //  - Rate-limit: atomowe RPC check_rate_limit przez service_role.
 //  - OPENROUTER_API_KEY tylko z Supabase Secrets.
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import { extractRetryAfter } from "./backoff.ts";
 import {
   PERSONAS,
   renderSystemPrompt,
@@ -53,10 +54,12 @@ function safeErrorMessage(e: unknown) {
 class ApiUpstreamError extends Error {
   status: number;
   code: string;
-  constructor(status: number, code: string) {
+  retryAfterSeconds?: number;
+  constructor(status: number, code: string, retryAfterSeconds?: number) {
     super(code);
     this.status = status;
     this.code = code;
+    this.retryAfterSeconds = retryAfterSeconds;
   }
 }
 
@@ -174,7 +177,12 @@ async function callOpenRouterReport(
     }
 
     if (res.status === 429) {
-      throw new ApiUpstreamError(429, "OPENROUTER_RATE_LIMITED");
+      lastError = new ApiUpstreamError(
+        429,
+        "OPENROUTER_RATE_LIMITED",
+        extractRetryAfter(res),
+      );
+      continue;
     }
     if (res.status === 404) {
       lastError = new ApiUpstreamError(
@@ -249,7 +257,12 @@ async function callOpenRouter(
     }
 
     if (res.status === 429) {
-      throw new ApiUpstreamError(429, "OPENROUTER_RATE_LIMITED");
+      lastError = new ApiUpstreamError(
+        429,
+        "OPENROUTER_RATE_LIMITED",
+        extractRetryAfter(res),
+      );
+      continue;
     }
     if (res.status === 404) {
       lastError = new ApiUpstreamError(
@@ -386,6 +399,16 @@ Deno.serve(async (req) => {
     return json({ ...results, remaining: rpc?.remaining ?? 0 }, 200, headers);
   } catch (e) {
     if (e instanceof ApiUpstreamError) {
+      if (e.status === 429) {
+        return json(
+          {
+            error: e.code,
+            retry_after_seconds: e.retryAfterSeconds ?? 60,
+          },
+          429,
+          headers,
+        );
+      }
       return json({ error: e.code }, e.status, headers);
     }
     return json({ error: "INTERNAL_ERROR" }, 503, headers);
