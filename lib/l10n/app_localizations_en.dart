@@ -231,4 +231,51 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsManage => 'Manage subscription';
+
+  @override
+  String get settingsDeleteAccount => 'Delete account';
+
+  @override
+  String get settingsDeleteTitle => 'Delete account';
+
+  @override
+  String get settingsDeleteBody =>
+      'Your account, session history and reports will be permanently deleted. This cannot be undone.';
+
+  @override
+  String get settingsDeleteConfirm => 'Delete';
+
+  @override
+  String get settingsDeleteCancel => 'Cancel';
+
+  @override
+  String get settingsDeleteError =>
+      'Could not delete your account. Please try again.';
+
+  @override
+  String get chatMicTooltip => 'Voice input';
+
+  @override
+  String get chatMicListening => 'Listening...';
+
+  @override
+  String get chatMicStop => 'Stop recording';
+
+  @override
+  String get chatTtsTooltip => 'Read aloud';
+
+  @override
+  String get chatTtsStop => 'Stop playback';
+
+  @override
+  String get chatMicPermissionDenied =>
+      'Microphone access was denied. You can still type your messages.';
+
+  @override
+  String get chatMicUnavailable =>
+      'Speech recognition is not available on this device. Please use text input.';
+
+  @override
+  String get chatMicEmpty =>
+      'No speech recognized. Try again or type your message.';
 }

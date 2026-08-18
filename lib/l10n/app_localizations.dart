@@ -533,6 +533,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Manage subscription'**
   String get settingsManage;
+
+  /// No description provided for @settingsDeleteAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete account'**
+  String get settingsDeleteAccount;
+
+  /// No description provided for @settingsDeleteTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete account'**
+  String get settingsDeleteTitle;
+
+  /// No description provided for @settingsDeleteBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your account, session history and reports will be permanently deleted. This cannot be undone.'**
+  String get settingsDeleteBody;
+
+  /// No description provided for @settingsDeleteConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get settingsDeleteConfirm;
+
+  /// No description provided for @settingsDeleteCancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get settingsDeleteCancel;
+
+  /// No description provided for @settingsDeleteError.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not delete your account. Please try again.'**
+  String get settingsDeleteError;
+
+  /// No description provided for @chatMicTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice input'**
+  String get chatMicTooltip;
+
+  /// No description provided for @chatMicListening.
+  ///
+  /// In en, this message translates to:
+  /// **'Listening...'**
+  String get chatMicListening;
+
+  /// No description provided for @chatMicStop.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop recording'**
+  String get chatMicStop;
+
+  /// No description provided for @chatTtsTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Read aloud'**
+  String get chatTtsTooltip;
+
+  /// No description provided for @chatTtsStop.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop playback'**
+  String get chatTtsStop;
+
+  /// No description provided for @chatMicPermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Microphone access was denied. You can still type your messages.'**
+  String get chatMicPermissionDenied;
+
+  /// No description provided for @chatMicUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Speech recognition is not available on this device. Please use text input.'**
+  String get chatMicUnavailable;
+
+  /// No description provided for @chatMicEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No speech recognized. Try again or type your message.'**
+  String get chatMicEmpty;
 }
 
 class _AppLocalizationsDelegate

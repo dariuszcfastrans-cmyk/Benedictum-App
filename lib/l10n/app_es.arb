@@ -71,5 +71,19 @@
   "settingsTierFree": "Free",
   "settingsTierPro": "Pro",
   "settingsExpiry": "Caduca",
-  "settingsManage": "Gestionar suscripción"
+  "settingsManage": "Gestionar suscripción",
+  "settingsDeleteAccount": "Eliminar cuenta",
+  "settingsDeleteTitle": "Eliminar cuenta",
+  "settingsDeleteBody": "Tu cuenta, historial de sesiones e informes se eliminarán permanentemente. Esta acción no se puede deshacer.",
+  "settingsDeleteConfirm": "Eliminar",
+  "settingsDeleteCancel": "Cancelar",
+  "settingsDeleteError": "No se pudo eliminar la cuenta. Inténtalo de nuevo.",
+  "chatMicTooltip": "Entrada de voz",
+  "chatMicListening": "Escuchando...",
+  "chatMicStop": "Detener grabación",
+  "chatTtsTooltip": "Leer en voz alta",
+  "chatTtsStop": "Detener reproducción",
+  "chatMicPermissionDenied": "Se denegó el acceso al micrófono. Aún puedes escribir tus mensajes.",
+  "chatMicUnavailable": "El reconocimiento de voz no está disponible en este dispositivo. Usa la entrada de texto.",
+  "chatMicEmpty": "No se reconoció la voz. Inténtalo de nuevo o escribe el texto."
 }

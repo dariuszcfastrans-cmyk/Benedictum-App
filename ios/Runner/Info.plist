@@ -4,6 +4,10 @@
 <dict>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>Benedictum używa mikrofonu wyłącznie do głosowego wpisywania wiadomości. Nagranie jest przetwarzane na urządzeniu i nie opuszcza Twojego urządzenia.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>Benedictum używa rozpoznawania mowy do transkrypcji głosowej wypowiedzi na tekst.</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>

@@ -8,6 +8,7 @@ import 'services/revenuecat_service.dart';
 import 'services/service_locator.dart';
 import 'services/supabase_api_service.dart';
 import 'services/supabase_auth_service.dart';
+import 'services/voice_service.dart';
 
 // Klucze publiczne wyłącznie z --dart-define. Zero literałów w kodzie.
 const String supabaseUrl = String.fromEnvironment('SUPABASE_URL');
@@ -25,6 +26,7 @@ Future<void> main() async {
     ServiceLocator.register(
       authService: SupabaseAuthService(),
       apiService: SupabaseApiService(),
+      voiceService: VoiceService(),
     );
   } else {
     // Fallback offline: UI sam korzysta z Mock* (C1 behavior).

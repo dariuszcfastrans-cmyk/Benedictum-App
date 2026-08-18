@@ -232,4 +232,51 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get settingsManage => 'Gérer l\'abonnement';
+
+  @override
+  String get settingsDeleteAccount => 'Supprimer le compte';
+
+  @override
+  String get settingsDeleteTitle => 'Supprimer le compte';
+
+  @override
+  String get settingsDeleteBody =>
+      'Votre compte, l\'historique des sessions et les rapports seront supprimés définitivement. Cette action est irréversible.';
+
+  @override
+  String get settingsDeleteConfirm => 'Supprimer';
+
+  @override
+  String get settingsDeleteCancel => 'Annuler';
+
+  @override
+  String get settingsDeleteError =>
+      'Impossible de supprimer le compte. Réessayez.';
+
+  @override
+  String get chatMicTooltip => 'Saisie vocale';
+
+  @override
+  String get chatMicListening => 'J\'écoute...';
+
+  @override
+  String get chatMicStop => 'Arrêter l\'enregistrement';
+
+  @override
+  String get chatTtsTooltip => 'Lire à voix haute';
+
+  @override
+  String get chatTtsStop => 'Arrêter la lecture';
+
+  @override
+  String get chatMicPermissionDenied =>
+      'L\'accès au microphone a été refusé. Vous pouvez toujours saisir vos messages au clavier.';
+
+  @override
+  String get chatMicUnavailable =>
+      'La reconnaissance vocale n\'est pas disponible sur cet appareil. Utilisez la saisie de texte.';
+
+  @override
+  String get chatMicEmpty =>
+      'Aucune parole reconnue. Réessayez ou saisissez le texte.';
 }

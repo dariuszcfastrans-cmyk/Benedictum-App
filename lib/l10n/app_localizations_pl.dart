@@ -230,4 +230,51 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get settingsManage => 'Zarządzaj subskrypcją';
+
+  @override
+  String get settingsDeleteAccount => 'Usuń konto';
+
+  @override
+  String get settingsDeleteTitle => 'Usuń konto';
+
+  @override
+  String get settingsDeleteBody =>
+      'Konto, historia sesji i raporty zostaną trwale usunięte. Tej operacji nie można cofnąć.';
+
+  @override
+  String get settingsDeleteConfirm => 'Usuń';
+
+  @override
+  String get settingsDeleteCancel => 'Anuluj';
+
+  @override
+  String get settingsDeleteError =>
+      'Nie udało się usunąć konta. Spróbuj ponownie.';
+
+  @override
+  String get chatMicTooltip => 'Wprowadź głosowo';
+
+  @override
+  String get chatMicListening => 'Słucham...';
+
+  @override
+  String get chatMicStop => 'Zatrzymaj nagrywanie';
+
+  @override
+  String get chatTtsTooltip => 'Odtwórz odpowiedź głosem';
+
+  @override
+  String get chatTtsStop => 'Zatrzymaj odtwarzanie';
+
+  @override
+  String get chatMicPermissionDenied =>
+      'Brak zgody na dostęp do mikrofonu. Możesz nadal pisać wiadomości tekstowo.';
+
+  @override
+  String get chatMicUnavailable =>
+      'Rozpoznawanie mowy jest niedostępne na tym urządzeniu. Użyj wprowadzania tekstowego.';
+
+  @override
+  String get chatMicEmpty =>
+      'Nie rozpoznano mowy. Spróbuj ponownie albo wpisz tekst.';
 }

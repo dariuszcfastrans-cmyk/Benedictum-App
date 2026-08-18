@@ -11,7 +11,9 @@ import '../../models/report.dart';
 import '../../models/scenario.dart';
 import '../../services/interfaces/i_api_service.dart';
 import '../../services/interfaces/i_revenuecat_service.dart';
+import '../../services/interfaces/i_voice_service.dart';
 import '../../services/mocks/mock_api_service.dart';
+import '../../services/mocks/mock_voice_service.dart';
 import '../../services/revenuecat_service.dart';
 import '../../services/service_locator.dart';
 
@@ -21,13 +23,16 @@ enum _ChatPhase { intake, analyze }
 
 /// Ekran czatu: lista wiadomości (bąbelki), input, mock API z 3 personami.
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key, this.apiService, this.revenueCatService});
+  const ChatScreen({super.key, this.apiService, this.revenueCatService, this.voiceService});
 
   /// Wstrzykiwany serwis API; domyślnie MockApiService (C1).
   final IApiService? apiService;
 
   /// Wstrzykiwany serwis RevenueCat; domyślnie singleton.
   final IRevenueCatService? revenueCatService;
+
+  /// Wstrzykiwany serwis głosowy (STT/TTS); domyślnie MockVoiceService.
+  final IVoiceService? voiceService;
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -41,8 +46,13 @@ class _ChatScreenState extends State<ChatScreen> {
       widget.apiService ?? ServiceLocator.apiService ?? MockApiService();
   late final IRevenueCatService _revenueCatService =
       widget.revenueCatService ?? RevenueCatService.instance;
+  // Voice (A3): priorytet parametr → rejestr → Mock (fallback offline/test).
+  late final IVoiceService _voiceService =
+      widget.voiceService ?? ServiceLocator.voiceService ?? MockVoiceService();
   final List<Message> _messages = [];
   bool _isLoading = false;
+  bool _isListening = false;
+  String? _ttsMessageId;
   Scenario? _scenario;
   // Raport oczekujący na nawigację (autosave 2A.3) — potrzebny przy retry.
   Report? _pendingReport;
@@ -81,10 +91,12 @@ class _ChatScreenState extends State<ChatScreen> {
   void dispose() {
     _inputController.dispose();
     _scrollController.dispose();
+    _voiceService.cancelListening();
+    _voiceService.stopSpeaking();
     super.dispose();
   }
 
-  /// Brama dostępu Pro (Część D2): przed zapytaniem do gemini-proxy sprawdza,
+  /// Brama dostępu Pro (Część D2): przed zapytaniem do llm-gateway sprawdza,
   /// czy użytkownik ma aktywny entitlement 'Benedictum Pro'. Brak Pro →
   /// snackbar z przyciskiem do paywall, bez wywołania API.
   /// Web = tryb demo: pomijamy bramę (RevenueCat nie działa na Web);
@@ -120,7 +132,7 @@ class _ChatScreenState extends State<ChatScreen> {
     final text = _inputController.text.trim();
     if (text.isEmpty || _isLoading) return;
 
-    // D2: brama Pro — brak dostępu blokuje wysłanie do gemini-proxy.
+    // D2: brama Pro — brak dostępu blokuje wysłanie do llm-gateway.
     if (!await _hasProAccess()) {
       if (!mounted) return;
       _showProRequired();
@@ -185,6 +197,68 @@ class _ChatScreenState extends State<ChatScreen> {
         );
       }
     });
+  }
+
+  /// Głosowe wprowadzanie wiadomości (A3.2): STT → istniejące pole tekstowe.
+  /// Użytkownik może poprawić transkrypcję przed wysłaniem (confirm-before-lock);
+  /// surowy wynik STT NIGDY nie jest wysyłany automatycznie.
+  Future<void> _startVoiceInput() async {
+    if (_isLoading || _isListening) return;
+    final l10n = AppLocalizations.of(context);
+    if (!_voiceService.isSttSupported) {
+      _showChatError(l10n.chatMicUnavailable);
+      return;
+    }
+
+    setState(() => _isListening = true);
+    try {
+      final transcript = await _voiceService.transcribe();
+      if (!mounted) return;
+      if (transcript.isEmpty) {
+        _showChatError(l10n.chatMicEmpty);
+        return;
+      }
+      _inputController.text = transcript;
+      _inputController.selection = TextSelection.fromPosition(
+        TextPosition(offset: transcript.length),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      _showChatError(l10n.chatMicPermissionDenied);
+    } finally {
+      if (mounted) {
+        setState(() => _isListening = false);
+      }
+    }
+  }
+
+  Future<void> _stopVoiceInput() async {
+    await _voiceService.cancelListening();
+    if (mounted) {
+      setState(() => _isListening = false);
+    }
+  }
+
+  /// Odtwarzanie odpowiedzi persony głosem (A3.3, on-device TTS).
+  /// Jedno odtwarzanie naraz; ponowne dotknięcie zatrzymuje.
+  Future<void> _toggleTts(Message message) async {
+    final l10n = AppLocalizations.of(context);
+    if (!_voiceService.isTtsSupported) {
+      _showChatError(l10n.chatMicUnavailable);
+      return;
+    }
+    if (_ttsMessageId == message.id && _voiceService.isSpeaking) {
+      await _voiceService.stopSpeaking();
+      if (mounted) {
+        setState(() => _ttsMessageId = null);
+      }
+      return;
+    }
+    await _voiceService.stopSpeaking();
+    final ok = await _voiceService.speak(message.content);
+    if (mounted) {
+      setState(() => _ttsMessageId = ok ? message.id : null);
+    }
   }
 
   /// Decyzja użytkownika: przejście z wywiadu (intake) do analizy (analyze).
@@ -348,7 +422,14 @@ class _ChatScreenState extends State<ChatScreen> {
               padding: const EdgeInsets.all(12),
               itemCount: _messages.length,
               itemBuilder: (context, index) {
-                return _MessageBubble(message: _messages[index]);
+                final message = _messages[index];
+                return _MessageBubble(
+                  message: message,
+                  speaking: _ttsMessageId == message.id,
+                  onSpeak: message.sender == 'user'
+                      ? null
+                      : () => _toggleTts(message),
+                );
               },
             ),
           ),
@@ -380,6 +461,15 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                 ),
                 const SizedBox(width: 8),
+                IconButton(
+                  onPressed:
+                      _isLoading ? null : (_isListening ? _stopVoiceInput : _startVoiceInput),
+                  tooltip: _isListening ? l10n.chatMicStop : l10n.chatMicTooltip,
+                  icon: Icon(
+                    _isListening ? Icons.stop_circle_outlined : Icons.mic_none,
+                  ),
+                ),
+                const SizedBox(width: 4),
                 FilledButton(
                   onPressed: _isLoading ? null : _sendMessage,
                   child: Text(l10n.chatSend),
@@ -395,9 +485,11 @@ class _ChatScreenState extends State<ChatScreen> {
 
 /// Bąbelek wiadomości: user po prawej, persony po lewej z avatarem.
 class _MessageBubble extends StatelessWidget {
-  const _MessageBubble({required this.message});
+  const _MessageBubble({required this.message, this.speaking = false, this.onSpeak});
 
   final Message message;
+  final bool speaking;
+  final VoidCallback? onSpeak;
 
   @override
   Widget build(BuildContext context) {
@@ -438,6 +530,19 @@ class _MessageBubble extends StatelessWidget {
                     _personaName(context, persona),
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
+                  if (onSpeak != null) ...[
+                    const SizedBox(width: 8),
+                    InkWell(
+                      onTap: onSpeak,
+                      child: Tooltip(
+                        message: speaking ? l10nChatTtsStop(context) : l10nChatTtsTooltip(context),
+                        child: Icon(
+                          speaking ? Icons.stop_circle_outlined : Icons.volume_up_outlined,
+                          size: 18,
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             const SizedBox(height: 4),
@@ -459,4 +564,10 @@ class _MessageBubble extends StatelessWidget {
         return l10n.personaCoach;
     }
   }
+
+  String l10nChatTtsTooltip(BuildContext context) =>
+      AppLocalizations.of(context).chatTtsTooltip;
+
+  String l10nChatTtsStop(BuildContext context) =>
+      AppLocalizations.of(context).chatTtsStop;
 }

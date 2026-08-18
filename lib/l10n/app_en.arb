@@ -71,5 +71,19 @@
   "settingsTierFree": "Free",
   "settingsTierPro": "Pro",
   "settingsExpiry": "Expires",
-  "settingsManage": "Manage subscription"
+  "settingsManage": "Manage subscription",
+  "settingsDeleteAccount": "Delete account",
+  "settingsDeleteTitle": "Delete account",
+  "settingsDeleteBody": "Your account, session history and reports will be permanently deleted. This cannot be undone.",
+  "settingsDeleteConfirm": "Delete",
+  "settingsDeleteCancel": "Cancel",
+  "settingsDeleteError": "Could not delete your account. Please try again.",
+  "chatMicTooltip": "Voice input",
+  "chatMicListening": "Listening...",
+  "chatMicStop": "Stop recording",
+  "chatTtsTooltip": "Read aloud",
+  "chatTtsStop": "Stop playback",
+  "chatMicPermissionDenied": "Microphone access was denied. You can still type your messages.",
+  "chatMicUnavailable": "Speech recognition is not available on this device. Please use text input.",
+  "chatMicEmpty": "No speech recognized. Try again or type your message."
 }

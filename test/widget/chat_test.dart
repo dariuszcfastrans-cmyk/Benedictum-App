@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:benedictum_mobile/app.dart';
+import 'package:benedictum_mobile/services/mocks/mock_voice_service.dart';
+import 'package:benedictum_mobile/services/service_locator.dart';
 
 /// Nawiguje od Splash do czatu wybranego scenariusza.
 Future<void> _navigateToChat(WidgetTester tester) async {
@@ -93,5 +95,89 @@ void main() {
     expect(find.textContaining('Jasna wizja produktu'), findsOneWidget);
     expect(find.textContaining('Brak twardych liczb'), findsOneWidget);
     expect(find.textContaining('Przygotuj jedną liczbę'), findsOneWidget);
+  });
+
+  testWidgets('Voice: przycisk mikrofonu widoczny w input barze', (tester) async {
+    await _navigateToChat(tester);
+    expect(find.byIcon(Icons.mic_none), findsOneWidget);
+    expect(find.text('Wyślij'), findsOneWidget);
+  });
+
+  testWidgets('Voice: STT wypełnia pole tekstowe bez automatycznego wysyłania',
+      (tester) async {
+    ServiceLocator.register(
+      voiceService: MockVoiceService(
+        transcriptOverride: 'Chcę przećwiczyć negocjację ceny.',
+      ),
+    );
+    addTearDown(() => ServiceLocator.register(voiceService: null));
+
+    await _navigateToChat(tester);
+
+    await tester.tap(find.byIcon(Icons.mic_none));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    // Transkrypcja trafiła do pola (confirm-before-lock), NIE wysłana:
+    // tekst występuje dokładnie raz — w EditableText pola, bez bąbelka.
+    final field = tester.widget<TextField>(find.byType(TextField));
+    expect(field.controller!.text, 'Chcę przećwiczyć negocjację ceny.');
+    expect(find.text('Chcę przećwiczyć negocjację ceny.'), findsOneWidget);
+  });
+
+  testWidgets('Voice: STT pusty wynik → komunikat, brak wysyłki', (tester) async {
+    ServiceLocator.register(
+      voiceService: MockVoiceService(simulateSttFailure: true),
+    );
+    addTearDown(() => ServiceLocator.register(voiceService: null));
+
+    await _navigateToChat(tester);
+
+    await tester.tap(find.byIcon(Icons.mic_none));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.text('Nie rozpoznano mowy. Spróbuj ponownie albo wpisz tekst.'),
+        findsOneWidget);
+  });
+
+  testWidgets('Voice: edycja transkrypcji przed wysłaniem (korekta STT)',
+      (tester) async {
+    ServiceLocator.register(
+      voiceService: MockVoiceService(
+        transcriptOverride: 'Popraw mnie błędny tekst',
+      ),
+    );
+    addTearDown(() => ServiceLocator.register(voiceService: null));
+
+    await _navigateToChat(tester);
+
+    await tester.tap(find.byIcon(Icons.mic_none));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    // Użytkownik poprawia transkrypcję zanim wyśle.
+    await tester.enterText(
+        find.byType(TextField), 'Poprawiony tekst po korekcie.');
+    await tester.tap(find.text('Wyślij'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 800));
+
+    // Wysłana została POPRAWIONA wersja, nie surowa transkrypcja.
+    expect(find.text('Poprawiony tekst po korekcie.'), findsOneWidget);
+    expect(find.text('Popraw mnie błędny tekst'), findsNothing);
+  });
+
+  testWidgets('Voice: 🔊 pojawia się przy odpowiedzi persony (TTS)', (tester) async {
+    await _navigateToChat(tester);
+
+    // Intake: odpowiedź Coacha → przycisk odtwarzania widoczny przy bąbelku.
+    await tester.enterText(find.byType(TextField), 'Mam gotowe MVP.');
+    await tester.tap(find.text('Wyślij'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 800));
+
+    expect(find.textContaining('Coach'), findsOneWidget);
+    expect(find.byIcon(Icons.volume_up_outlined), findsOneWidget);
   });
 }
