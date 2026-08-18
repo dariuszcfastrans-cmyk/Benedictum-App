@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:benedictum_mobile/app.dart';
+import 'package:benedictum_mobile/config/locale_controller.dart';
 
 Future<void> _navigateToSettings(WidgetTester tester) async {
   await tester.pumpWidget(BenedictumApp());
@@ -24,6 +25,11 @@ Future<void> _navigateToSettings(WidgetTester tester) async {
 }
 
 void main() {
+  setUp(() {
+    // LocaleController to singleton — reset do PL między testami.
+    LocaleController.instance.locale.value = const Locale('pl');
+  });
+
   testWidgets('Settings: zmiana języka przełącza UI bez restartu procesu', (tester) async {
     await _navigateToSettings(tester);
 
@@ -39,5 +45,32 @@ void main() {
     // UI przełączone na angielski — bez restartu procesu.
     expect(find.text('Settings'), findsOneWidget);
     expect(find.text('Language'), findsOneWidget);
+  });
+
+  testWidgets('Settings: usunięcie konta wymaga potwierdzenia i wraca do splash', (tester) async {
+    await _navigateToSettings(tester);
+
+    // Przycisk usuwania konta widoczny.
+    expect(find.text('Usuń konto'), findsOneWidget);
+
+    // Klik — pojawia się dialog potwierdzenia.
+    await tester.tap(find.text('Usuń konto'));
+    await tester.pumpAndSettle();
+    expect(
+      find.textContaining('trwale usunięte'),
+      findsOneWidget,
+    );
+
+    // Anuluj — zostajemy na ustawieniach.
+    await tester.tap(find.text('Anuluj'));
+    await tester.pumpAndSettle();
+    expect(find.text('Ustawienia'), findsOneWidget);
+
+    // Potwierdź — wracamy do splash (mock deleteAccount czyści sesję).
+    await tester.tap(find.text('Usuń konto'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Usuń').last);
+    await tester.pumpAndSettle();
+    expect(find.text('Przejdź dalej'), findsOneWidget);
   });
 }

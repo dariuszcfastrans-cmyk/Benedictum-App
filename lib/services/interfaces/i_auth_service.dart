@@ -18,6 +18,10 @@ abstract interface class IAuthService {
   /// Wylogowanie — czyści bieżącego użytkownika.
   Future<void> signOut();
 
+  /// Trwałe usunięcie konta i wszystkich danych (wymóg Google Play / Galaxy Store).
+  /// Po powodzeniu sesja jest zamknięta (stan: wylogowany).
+  Future<void> deleteAccount();
+
   /// Aktualnie zalogowany użytkownik (null, gdy brak sesji).
   User? get currentUser;
 

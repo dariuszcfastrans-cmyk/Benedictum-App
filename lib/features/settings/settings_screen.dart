@@ -144,6 +144,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
             icon: const Icon(Icons.logout),
             label: Text(l10n.settingsLogout),
           ),
+          const SizedBox(height: 12),
+          TextButton.icon(
+            onPressed: _confirmDeleteAccount,
+            icon: const Icon(Icons.delete_forever),
+            label: Text(l10n.settingsDeleteAccount),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+          ),
         ],
       ),
     );
@@ -159,6 +166,43 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
     if (!mounted) return;
     context.go(AppRoutes.splash);
+  }
+
+  /// Potwierdzenie usunięcia konta (wymóg Google Play: jawne potwierdzenie
+  /// przed trwałą operacją). Po powodzeniu wracamy do splash.
+  Future<void> _confirmDeleteAccount() async {
+    final l10n = AppLocalizations.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.settingsDeleteTitle),
+        content: Text(l10n.settingsDeleteBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.settingsDeleteCancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(
+              l10n.settingsDeleteConfirm,
+              style: const TextStyle(color: Colors.red),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    try {
+      await _authService?.deleteAccount();
+      if (!mounted) return;
+      context.go(AppRoutes.splash);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.settingsDeleteError)),
+      );
+    }
   }
 
   String _formatDate(DateTime date) {

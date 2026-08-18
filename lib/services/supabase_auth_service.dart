@@ -108,4 +108,20 @@ class SupabaseAuthService implements IAuthService {
   Future<void> signOut() async {
     await _auth.signOut();
   }
+
+  /// Usuwanie konta przez RPC delete_my_account() (migracja K9/B2).
+  /// SECURITY DEFINER po stronie bazy: kasuje rate_limits + auth.users,
+  /// a ON DELETE CASCADE usuwa profiles/sessions/messages/reports.
+  /// Po powodzeniu wywołuje signOut (sesja musi zniknąć lokalnie).
+  @override
+  Future<void> deleteAccount() async {
+    try {
+      await supabase.Supabase.instance.client.rpc('delete_my_account');
+      await _auth.signOut();
+    } on supabase.AuthException catch (e) {
+      throw AuthException('Błąd usuwania konta: ${e.message}');
+    } catch (e) {
+      throw AuthException('Błąd usuwania konta: $e');
+    }
+  }
 }

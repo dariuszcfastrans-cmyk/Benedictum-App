@@ -52,4 +52,9 @@ class MockAuthService implements IAuthService {
     _currentUser = null;
     _emailConfirmed = false;
   }
+
+  @override
+  Future<void> deleteAccount() async {
+    await signOut();
+  }
 }
