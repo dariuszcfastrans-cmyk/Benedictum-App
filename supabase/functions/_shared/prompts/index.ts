@@ -1,5 +1,7 @@
 // Agregator promptów Rady Doradczej Benedictum — SOURCE OF TRUTH (D1).
-// Jedyny punkt, z którego gemini-proxy/index.ts pobiera system prompty.
+// Moduł współdzielony (KROK 2, _shared/): jedyny punkt, z którego hosty LLM
+// (llm-gateway od KROKU 8; wcześniej gemini-proxy i openrouter-proxy) pobierają
+// system prompty.
 // renderSystemPrompt(): interpolacja {scenario}, {user_input}, {context}
 // i {safety_note} z escape'em delimiterów XML — "delimiter escaping / input
 // boundary hardening".
@@ -102,46 +104,8 @@ export function renderReportPrompt(scenario: string, context: string): string {
   return out;
 }
 
-/// Kontrakt raportu (Dyrektywa 2A §3).
-export type ReportContract = {
-  strengths: string[];
-  gaps: string[];
-  action_items: string[];
-  overall_rating: number;
-};
-
-/// Walidacja odpowiedzi raportu. Zwraca kontrakt albo null (422 INVALID_REPORT).
-/// overall_rating musi być liczbą całkowitą 1–5; tablice — tablicami stringów.
-export function parseReport(text: string): ReportContract | null {
-  const trimmed = text.trim();
-  if (!trimmed) return null;
-  // Usuń ewentualne ramki markdown ```json ... ```.
-  const json = trimmed.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
-  let data: unknown;
-  try {
-    data = JSON.parse(json);
-  } catch {
-    return null;
-  }
-  if (typeof data !== "object" || data === null || Array.isArray(data)) return null;
-  const obj = data as Record<string, unknown>;
-  if (!Array.isArray(obj.strengths) || !obj.strengths.every((s) => typeof s === "string")) {
-    return null;
-  }
-  if (!Array.isArray(obj.gaps) || !obj.gaps.every((s) => typeof s === "string")) {
-    return null;
-  }
-  if (!Array.isArray(obj.action_items) || !obj.action_items.every((s) => typeof s === "string")) {
-    return null;
-  }
-  const rating = obj.overall_rating;
-  if (typeof rating !== "number" || !Number.isInteger(rating) || rating < 1 || rating > 5) {
-    return null;
-  }
-  return {
-    strengths: obj.strengths as string[],
-    gaps: obj.gaps as string[],
-    action_items: obj.action_items as string[],
-    overall_rating: rating,
-  };
-}
+// Kontrakt raportu (Dyrektywa 2A §3) — kanon w core (KROK 3/4); tu re-eksport, brak dryfu.
+export type { ReportContract } from "../core/index.ts";
+// Walidacja kontraktu raportu — kanon w core (KROK 4); tu re-eksport dla wstecznej zgodności
+// (do KROKU 5/7 proxie importują parseReport z prompts bez zmian).
+export { parseReport } from "../core/index.ts";

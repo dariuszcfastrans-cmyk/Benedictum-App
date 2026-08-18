@@ -8,20 +8,41 @@ import '../models/session_summary.dart';
 import 'interfaces/i_api_service.dart';
 
 /// Implementacja IApiService na Supabase Edge Function (Część C2).
-/// Wywołuje funkcję 'gemini-proxy' przez functions.invoke (nie http.post).
+/// Wywołuje funkcję 'llm-gateway' przez functions.invoke (nie http.post).
 /// Mapowanie błędów: 401 → AuthException, 429 → RateLimitException,
 /// 422 → ApiException, 503 → ApiException.
 class SupabaseApiService implements IApiService {
   SupabaseApiService();
-  static const String _llmFunctionName = String.fromEnvironment(
+
+  /// Runtime switch (KROK 7): nazwa funkcji LLM czytana w runtime, nie w build time.
+  /// Priorytet: (1) override kompilacji SUPABASE_LLM_FUNCTION (dev),
+  /// (2) domyślnie llm-gateway (od KROKU 8 jedyny host LLM — legacy proxy usunięte).
+  static const String _compileTimeLlmFunction = String.fromEnvironment(
     'SUPABASE_LLM_FUNCTION',
-    defaultValue: 'openrouter-proxy',
   );
+
+  String _llmFunctionName =
+      _compileTimeLlmFunction.isNotEmpty ? _compileTimeLlmFunction : 'llm-gateway';
+
+  /// Przełącza nazwę funkcji LLM w runtime (bez przebudowy aplikacji) — KROK 7.
+  void useLlmFunction(String functionName) {
+    if (functionName.isNotEmpty) _llmFunctionName = functionName;
+  }
 
   /// Osobna funkcja persistencji (Nota N2) — Fala 2A.2/2A.3.
   static const String _sessionFunctionName = 'session-proxy';
 
   FunctionsClient get _functions => Supabase.instance.client.functions;
+
+  /// Wywołanie funkcji LLM (KROK 8: bez fallbacku legacy — llm-gateway jedynym hostem).
+  Future<Map<String, dynamic>> _invokeLlm(Map<String, dynamic> body) async {
+    final response = await _functions.invoke(_llmFunctionName, body: body);
+    final data = response.data;
+    if (data is Map) {
+      return Map<String, dynamic>.from(data);
+    }
+    return const <String, dynamic>{};
+  }
 
   @override
   Future<List<Message>> getPersonaResponses({
@@ -33,19 +54,13 @@ class SupabaseApiService implements IApiService {
     try {
       // Tryb "intake" prowadzi wyłącznie Coach (edge function ogranicza targety).
       final isIntake = mode == 'intake';
-      final response = await _functions.invoke(
-        _llmFunctionName,
-        body: {
-          'persona': isIntake ? 'coach' : null,
-          'message': userInput,
-          'scenario': scenario,
-          'context': context,
-          'mode': mode,
-        },
-      );
-
-      // Odpowiedź JSON: { critic, optimist, coach } + remaining.
-      final data = (response.data as Map?) ?? const <String, dynamic>{};
+      final data = await _invokeLlm({
+        'persona': isIntake ? 'coach' : null,
+        'message': userInput,
+        'scenario': scenario,
+        'context': context,
+        'mode': mode,
+      });
 
       final messages = <Message>[];
       for (final persona in Persona.values) {
@@ -79,16 +94,12 @@ class SupabaseApiService implements IApiService {
     required String context,
   }) async {
     try {
-      final response = await _functions.invoke(
-        _llmFunctionName,
-        body: {
-          'mode': 'report',
-          'scenario': scenario,
-          'context': context,
-        },
-      );
+      final data = await _invokeLlm({
+        'mode': 'report',
+        'scenario': scenario,
+        'context': context,
+      });
 
-      final data = (response.data as Map?) ?? const <String, dynamic>{};
       final reportJson = data['report'];
       if (reportJson is! Map) {
         throw ApiException('Nieprawidłowy format raportu (422).');

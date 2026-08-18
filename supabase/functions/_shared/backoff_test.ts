@@ -1,7 +1,7 @@
-// Testy jednostkowe backoff (G.2) — openrouter-proxy.
-// Symulacja odpowiedzi OpenRouter 429 z nagłówkiem Retry-After (sekundy | HTTP-date | brak).
+// Testy jednostkowe backoff (G.2) — moduł współdzielony (_shared/, KROK 2).
+// Konsolidacja identycznych testów gemini-proxy i openrouter-proxy (7 przypadków).
 //
-// Uruchom: deno test --allow-net supabase/functions/openrouter-proxy/backoff_test.ts
+// Uruchom: deno test supabase/functions/_shared/backoff_test.ts
 
 import { assertEquals } from "jsr:@std/assert";
 import { extractRetryAfter } from "./backoff.ts";
@@ -19,8 +19,7 @@ Deno.test("Retry-After = 0 → natychmiast", () => {
 Deno.test("Retry-After jako HTTP-date (zaokrąglenie w górę)", () => {
   const in5s = new Date(Date.now() + 5000).toUTCString();
   const res = new Response(null, { headers: { "Retry-After": in5s } });
-  const got = extractRetryAfter(res);
-  assertEquals(got, 5);
+  assertEquals(extractRetryAfter(res), 5);
 });
 
 Deno.test("HTTP-date w przeszłości → 0", () => {

@@ -1,5 +1,5 @@
 // Testy Deno — source of truth promptów (D1).
-// Uruchom: deno test supabase/functions/gemini-proxy/prompts/prompts_test.ts
+// Uruchom: deno test supabase/functions/_shared/prompts/prompts_test.ts
 // Kryteria D1 #3 i #4: escape delimiterów + interpolacja bez surowych placeholderów.
 
 import { PERSONAS, renderSystemPrompt, escapeXml, renderReportPrompt, parseReport } from "./index.ts";

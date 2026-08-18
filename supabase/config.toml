@@ -413,16 +413,10 @@ enabled = true
 # JSON string passed through to pg-delta SQL formatting.
 # format_options = "{\"keywordCase\":\"upper\",\"indent\":2,\"maxWidth\":80,\"commaStyle\":\"trailing\"}"
 
-[functions.gemini-proxy]
-# Walidacja JWT przez platformę Supabase (401 przed kodem funkcji).
+[functions.llm-gateway]
+# Thin host na silniku LLM Foundation v2.0 (KROK 7) — JWT/rate-limit/validateBody → engine.execute.
+# Jedyny host LLM od KROKU 8 (legacy proxy gemini-proxy/openrouter-proxy usunięte).
 verify_jwt = true
-# Limity wywołań — 5 req/min realizowane przez RPC check_rate_limit (nie przez ten limit).
-enabled = true
-
-[functions.openrouter-proxy]
-# Walidacja JWT przez platformę Supabase (401 przed kodem funkcji).
-verify_jwt = true
-# Limity wywołań — 5 req/min realizowane przez RPC check_rate_limit (nie przez ten limit).
 enabled = true
 
 [functions.session-proxy]

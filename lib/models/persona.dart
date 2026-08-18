@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 /// Persony wirtualnej rady doradczej Benedictum — kontrakt dla warstwy UI.
 /// D1: System Prompty stanowią własność intelektualną produktu i żyją
-/// wyłącznie w Edge Function (supabase/functions/gemini-proxy/prompts/).
+/// wyłącznie w Edge Functions (supabase/functions/_shared/prompts/).
 /// Ten model trzyma tylko metadane UI — ZERO treści system promptów.
 enum Persona {
   critic(

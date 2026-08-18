@@ -1,6 +1,7 @@
 // E2E smoke-test (online, prod cloud) — Fala 2B, wariant C (trwały artefakt).
-// Testuje PEŁNY łańcuch: JWT auth → openrouter-proxy (LLM, mode:"report")
+// Testuje PEŁNY łańcuch: JWT auth → llm-gateway (LLM, mode:"report")
 // → session-proxy POST/GET/DELETE /sessions → czystość (404 po DELETE).
+// Przeniesiony z openrouter-proxy do llm-gateway w KROKU 8 (deprecacja legacy).
 // Bazuje na jednorazowym teście Fali 2B (7/7 PASS, 2026-08-17) — utrwala wartość.
 //
 // Wymagania uruchomienia:
@@ -10,7 +11,7 @@
 //   Zmienne brane z env; jeśli brak — próba odczytu z pliku env (HOME/.env.dci).
 //
 // Uruchom:
-//   deno test --allow-net --allow-env --allow-read supabase/functions/openrouter-proxy/e2e_smoke_test.ts
+//   deno test --allow-net --allow-env --allow-read supabase/functions/llm-gateway/e2e_smoke_test.ts
 //
 // Bezpieczeństwo:
 //   - klucze/logowanie wyłącznie przez env — nigdy w repo ani w logach,
@@ -74,20 +75,20 @@ function decodeSub(jwt: string): string {
   return decoded.sub as string;
 }
 
-Deno.test("E2E online: auth + openrouter-proxy report + session-proxy lifecycle", async () => {
+Deno.test("E2E online: auth + llm-gateway report + session-proxy lifecycle", async () => {
   const jwt = await signIn();
   assert(decodeSub(jwt).length > 0, "sub powinno istnieć");
 
-  // 1) openrouter-proxy mode:"report" — 1 wywołanie LLM, kontrakt raportu.
+  // 1) llm-gateway mode:"report" — 1 wywołanie LLM, kontrakt raportu.
   const scenario = "SYNTETYCZNY-E2E: negocjacja ceny kontraktu usługowego (bez PII)";
   const context =
     "Klient: firma syntetyczna. User: 'Chce obnizyc cene o 15%'. Coach poprowadzil wywiad.";
-  const repRes = await fetch(`${FN_BASE}/openrouter-proxy`, {
+  const repRes = await fetch(`${FN_BASE}/llm-gateway`, {
     method: "POST",
     headers: { Authorization: `Bearer ${jwt}`, "Content-Type": "application/json" },
     body: JSON.stringify({ mode: "report", scenario, context }),
   });
-  assertEquals(repRes.status, 200, `openrouter-proxy status=${repRes.status}`);
+  assertEquals(repRes.status, 200, `llm-gateway status=${repRes.status}`);
   const repBody = await repRes.json();
   const report = repBody.report;
   assert(report, "brak report");

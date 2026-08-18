@@ -1,9 +1,9 @@
-// Backoff (G.2) — gemini-proxy.
-// Odczyt Retry-After z odpowiedzi Gemini API (sekundy lub HTTP-date).
+// Backoff (G.2) — moduł współdzielony (KROK 2, _shared/).
+// Odczyt Retry-After z odpowiedzi providera LLM (sekundy lub HTTP-date).
 // Fallback 60s (spójnie z rate-limitem RPC check_rate_limit).
-//
-// Izolacja providera: oddzielny moduł per provider (granica adaptera),
-// nie współdzielony z openrouter-proxy — zgodnie z dyrektywą Krok 3.
+// Rola w architekturze v2.0: narzędzie silnika (engine) — retry/backoff transportu,
+// nie część adaptera (adaptery są czystymi tłumaczami). Uwaga: wcześniejszy komentarz
+// „nie współdzielony… zgodnie z dyrektywą Krok 3" jest unieważniony decyzją KROKU 2.
 
 export function extractRetryAfter(res: Response, fallback = 60): number {
   const raw = res.headers.get("Retry-After");
