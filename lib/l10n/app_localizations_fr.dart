@@ -279,4 +279,11 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get chatMicEmpty =>
       'Aucune parole reconnue. Réessayez ou saisissez le texte.';
+
+  @override
+  String get settingsConversationLanguage => 'Langue de conversation';
+
+  @override
+  String get settingsConversationHint =>
+      'Utilisée pour la saisie vocale et la lecture à voix haute. Indépendante de la langue de l\'appareil et de l\'interface.';
 }

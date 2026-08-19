@@ -277,4 +277,11 @@ class AppLocalizationsPl extends AppLocalizations {
   @override
   String get chatMicEmpty =>
       'Nie rozpoznano mowy. Spróbuj ponownie albo wpisz tekst.';
+
+  @override
+  String get settingsConversationLanguage => 'Język rozmowy';
+
+  @override
+  String get settingsConversationHint =>
+      'Używany do wprowadzania głosowego i odtwarzania. Niezależny od języka urządzenia i interfejsu.';
 }

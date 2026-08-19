@@ -50,7 +50,12 @@ void main() {
   testWidgets('Settings: usunięcie konta wymaga potwierdzenia i wraca do splash', (tester) async {
     await _navigateToSettings(tester);
 
-    // Przycisk usuwania konta widoczny.
+    // Przycisk usuwania konta widoczny (ListView — przewiń jeśli off-screen).
+    await tester.scrollUntilVisible(
+      find.text('Usuń konto'),
+      100,
+      scrollable: find.byType(Scrollable).first,
+    );
     expect(find.text('Usuń konto'), findsOneWidget);
 
     // Klik — pojawia się dialog potwierdzenia.

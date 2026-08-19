@@ -280,4 +280,11 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get chatMicEmpty =>
       'No se reconoció la voz. Inténtalo de nuevo o escribe el texto.';
+
+  @override
+  String get settingsConversationLanguage => 'Idioma de conversación';
+
+  @override
+  String get settingsConversationHint =>
+      'Se utiliza para la entrada de voz y la lectura en voz alta. Independiente del idioma del dispositivo y de la interfaz.';
 }

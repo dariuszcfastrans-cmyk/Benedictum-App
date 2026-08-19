@@ -1,6 +1,6 @@
 # Data Safety — mapa odpowiedzi do formularza (Google Play / Galaxy Store)
 
-_Ostatnia aktualizacja: 2026-08-18 (A3: voice on-device)_
+_Ostatnia aktualizacja: 2026-08-20 (VOICE HARDENING: hybryda on-device + cloud R1-C)_
 _Dokument roboczy K9 (B3): przenieść 1:1 do formularza w konsoli._
 
 ## Google Play — Data safety form
@@ -68,13 +68,22 @@ _Dokument roboczy K9 (B3): przenieść 1:1 do formularza w konsoli._
 3. Jeśli decyzja D7 → płatny model: zaktualizować opis dostawców, bo zmienia się
    praktyka treningu (free endpoints = trening domyślnie ON).
 
-## Voice (A3.2/A3.3) — audio nie opuszcza urządzenia
+## Voice (A3.2/A3.3) — hybryda on-device + cloud (R1-C, VOICE HARDENING)
 
-- Głosowe wprowadzanie (STT) i odtwarzanie odpowiedzi (TTS) działają **wyłącznie
-  na urządzeniu** (Android SpeechRecognizer / Android TextToSpeech).
-- **Audio NIE opuszcza urządzenia i NIE jest gromadzone/udostępniane** — deklaracja
-  „Zdjęcia/wideo: Audio → NIE" (wiersz powyżej) **pozostaje prawdziwa**.
+- Głosowe wprowadzanie (STT) działa **hybrydowo**: najpierw próbuje rozpoznania
+  **na urządzeniu** (Android: `onDevice:true` + `isOnDeviceRecognitionAvailable`;
+  iOS: `onDevice:true`), a gdy on-device zwróci puste/nieudane rozpoznanie —
+  następuje **jawny fallback do chmury** (speech_to_text createSpeechRecognizer
+  bez `onDevice`). Tryb ostatniego rozpoznania jest raportowany (`lastSttMode`).
+- **Audio może zatem opuścić urządzenie w scenariuszu fallbacku cloud** — po
+  transkrypcji nie jest przechowywane po stronie serwera przez aplikację.
+  TTS (odtwarzanie odpowiedzi) działa na urządzeniu (Android TextToSpeech).
 - Do LLM Gateway trafia wyłącznie **tekst** transkrypcji (ten sam, który użytkownik
   mógłby wpisać ręcznie). Nie jest on nową kategorią danych.
 - Uprawnienie RECORD_AUDIO jest wymagane przez system; aplikacja prosi o nie
   dopiero w momencie pierwszego użycia 🎙 (degradacja do trybu tekstowego bez zgody).
+- **Deklaracja sklepowa**: audio NIE jest wysyłane przez aplikację jako plik i nie
+  jest gromadzone; ale przy fallbacku cloud audio trafia do usługi rozpoznawania
+  mowy platformy (Android RecognizerIntent / iOS SFSpeech). W formularzu danych
+  sklepu opisz to jako przetwarzanie przez zewnętrzne usługi rozpoznawania mowy,
+  a nie jako „audio NIE opuszcza urządzenia".

@@ -85,5 +85,7 @@
   "chatTtsStop": "Zatrzymaj odtwarzanie",
   "chatMicPermissionDenied": "Brak zgody na dostęp do mikrofonu. Możesz nadal pisać wiadomości tekstowo.",
   "chatMicUnavailable": "Rozpoznawanie mowy jest niedostępne na tym urządzeniu. Użyj wprowadzania tekstowego.",
-  "chatMicEmpty": "Nie rozpoznano mowy. Spróbuj ponownie albo wpisz tekst."
+  "chatMicEmpty": "Nie rozpoznano mowy. Spróbuj ponownie albo wpisz tekst.",
+  "settingsConversationLanguage": "Język rozmowy",
+  "settingsConversationHint": "Używany do wprowadzania głosowego i odtwarzania. Niezależny od języka urządzenia i interfejsu."
 }

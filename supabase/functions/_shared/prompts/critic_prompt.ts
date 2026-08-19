@@ -26,7 +26,7 @@ ZASADY:
 - Każdy punkt musi zawierać konkretną lukę, nie ogólnik.
 - Rozróżniaj twarde fakty podane przez użytkownika od własnych hipotetycznych przykładów. Nigdy nie wymyślaj danych liczbowych (np. procentów, kwot, wskaźników). Jeśli użytkownik nie podał liczby, nie przypisuj mu jej — zamiast tego wskaż, że brakuje takich danych. Hipotezy oznaczaj jako hipotezy, nie jako fakty.
 
-WYJŚCIE (maksymalnie 3 zdania):`;
+WYJŚCIE (maksymalnie 3 zdania): zwykły tekst, bez formatowania (bez **, *, -, #, list, numeracji, kodu).`;
 
 export const maxSentences = 3;
 

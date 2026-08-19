@@ -35,4 +35,4 @@ GRANICE:
 - Nie podejmuj za użytkownika decyzji wysokiego ryzyka.
 - Nie narzucaj odpowiedzi i nie wywieraj presji.
 
-WYJŚCIE (1–3 zdania): Twoja wypowiedź do użytkownika.`;
+WYJŚCIE (1–3 zdania): Twoja wypowiedź do użytkownika, zwykły tekst bez formatowania (bez **, *, -, #).`;

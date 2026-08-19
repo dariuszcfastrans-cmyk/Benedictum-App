@@ -85,5 +85,7 @@
   "chatTtsStop": "Stop playback",
   "chatMicPermissionDenied": "Microphone access was denied. You can still type your messages.",
   "chatMicUnavailable": "Speech recognition is not available on this device. Please use text input.",
-  "chatMicEmpty": "No speech recognized. Try again or type your message."
+  "chatMicEmpty": "No speech recognized. Try again or type your message.",
+  "settingsConversationLanguage": "Conversation language",
+  "settingsConversationHint": "Used for voice input and read-aloud. Independent of your device and interface language."
 }

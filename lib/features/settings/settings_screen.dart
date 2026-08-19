@@ -91,6 +91,37 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 24),
           Text(
+            l10n.settingsConversationLanguage,
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 8),
+          ValueListenableBuilder<ConversationLanguage>(
+            valueListenable: LocaleController.instance.conversationLanguage,
+            builder: (context, conversation, _) {
+              return DropdownButtonFormField<ConversationLanguage>(
+                initialValue: conversation,
+                items: ConversationLanguage.values
+                    .map((l) => DropdownMenuItem(
+                          value: l,
+                          child: Text(l.displayName),
+                        ))
+                    .toList(),
+                onChanged: (newLanguage) {
+                  if (newLanguage == null) return;
+                  // Język rozmowy (STT+TTS) — niezależny od UI i systemu.
+                  LocaleController.instance
+                      .setConversationLanguage(newLanguage);
+                },
+              );
+            },
+          ),
+          const SizedBox(height: 4),
+          Text(
+            l10n.settingsConversationHint,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+          const SizedBox(height: 24),
+          Text(
             l10n.settingsSubscription,
             style: Theme.of(context).textTheme.titleMedium,
           ),

@@ -617,6 +617,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No speech recognized. Try again or type your message.'**
   String get chatMicEmpty;
+
+  /// No description provided for @settingsConversationLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Conversation language'**
+  String get settingsConversationLanguage;
+
+  /// No description provided for @settingsConversationHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Used for voice input and read-aloud. Independent of your device and interface language.'**
+  String get settingsConversationHint;
 }
 
 class _AppLocalizationsDelegate

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app.dart';
+import 'config/locale_controller.dart';
 import 'services/onesignal_service.dart';
 import 'services/revenuecat_service.dart';
 import 'services/service_locator.dart';
@@ -19,6 +20,9 @@ const String revenueCatKey = String.fromEnvironment('REVENUECAT_KEY');
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Wczytaj zapisane języki (UI + rozmowa). Brak zapisu → wartości domyślne.
+  await LocaleController.instance.load();
+
   // C2: Supabase online, jeśli zmienne obecne; inaczej offline (Mock — C1 behavior).
   final bool online = supabaseUrl.isNotEmpty && supabaseAnonKey.isNotEmpty;
   if (online) {
@@ -31,6 +35,15 @@ Future<void> main() async {
   } else {
     // Fallback offline: UI sam korzysta z Mock* (C1 behavior).
     ServiceLocator.register(authService: null, apiService: null);
+  }
+
+  // R2: język rozmowy (STT+TTS) — niezależna decyzja użytkownika, ustawiony
+  // na VoiceService przy starcie (zapisany wybór lub domyślny EN).
+  final voice = ServiceLocator.voiceService;
+  if (voice != null) {
+    voice.setConversationLanguage(
+      LocaleController.instance.conversationLanguage.value,
+    );
   }
 
   // SDK natywne wyłącznie na Android/iOS (!kIsWeb).

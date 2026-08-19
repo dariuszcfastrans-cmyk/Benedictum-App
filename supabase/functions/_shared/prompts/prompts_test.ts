@@ -100,6 +100,24 @@ Deno.test("mode=intake: nie interpoluje context do promptu wywiadu", () => {
   assert(!out.includes("{context}"), "surowy {context} pozostał");
 });
 
+// R-TTS: prompty zabraniają formatowania markdown (TTS czyta tekst dosłownie;
+// gwiazdki/kratki musiałyby być filtrowane — bezpieczniej generować czysty tekst).
+for (const persona of PERSONAS) {
+  Deno.test(`[${persona.senderId}] prompt zakazuje markdown (TTS clean text)`, () => {
+    const p = persona.systemPrompt.toLowerCase();
+    assert(p.includes("zwykły tekst"), "brak wymogu zwykłego tekstu");
+    assert(p.includes("bez formatowania"), "brak zakazu formatowania");
+  });
+}
+Deno.test("intake: prompt wywiadu zakazuje markdown (TTS clean text)", () => {
+  const coachPersona = PERSONAS.find((p) => p.senderId === "coach")!;
+  const out = renderSystemPrompt(coachPersona, "scenariusz", "pytanie", {
+    mode: "intake",
+  }).toLowerCase();
+  assert(out.includes("zwykły tekst"), "brak wymogu zwykłego tekstu");
+  assert(out.includes("bez formatowania"), "brak zakazu formatowania");
+});
+
 // Fala 2A: prompt raportu interpoluje {scenario} i {context}, bez placeholderów.
 Deno.test("report: interpolacja {scenario} i {context} bez surowych placeholderów", () => {
   const out = renderReportPrompt("pitch_investor", "USER_STATEMENT 1: Mam gotowe MVP.\nUSER_STATEMENT 2: Brakuje mi liczb rynkowych.");

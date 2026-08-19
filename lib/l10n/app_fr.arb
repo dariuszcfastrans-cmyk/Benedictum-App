@@ -85,5 +85,7 @@
   "chatTtsStop": "Arrêter la lecture",
   "chatMicPermissionDenied": "L'accès au microphone a été refusé. Vous pouvez toujours saisir vos messages au clavier.",
   "chatMicUnavailable": "La reconnaissance vocale n'est pas disponible sur cet appareil. Utilisez la saisie de texte.",
-  "chatMicEmpty": "Aucune parole reconnue. Réessayez ou saisissez le texte."
+  "chatMicEmpty": "Aucune parole reconnue. Réessayez ou saisissez le texte.",
+  "settingsConversationLanguage": "Langue de conversation",
+  "settingsConversationHint": "Utilisée pour la saisie vocale et la lecture à voix haute. Indépendante de la langue de l'appareil et de l'interface."
 }

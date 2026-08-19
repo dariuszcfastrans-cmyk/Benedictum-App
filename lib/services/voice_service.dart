@@ -1,20 +1,27 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, visibleForTesting;
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
+import '../config/locale_controller.dart';
 import 'interfaces/i_voice_service.dart';
 
-/// Implementacja IVoiceService na Android/iOS (A3.2/A3.3).
+/// Implementacja IVoiceService na Android/iOS (A3.2/A3.3, R1-C, R2, R-TTS).
 ///
-/// STT: Android SpeechRecognizer / iOS Speech framework (pakiet speech_to_text)
-/// — rozpoznawanie przez system; bez własnego klucza API.
-/// TTS: systemowy TextToSpeech (pakiet flutter_tts) — głosy polskie/en.
+/// STT (R1-C — HYBRYDA):
+///   preferowane rozpoznawanie on-device (audio NIE opuszcza urządzenia);
+///   jeżeli on-device nie daje wyniku (niedostępne/błąd/cisza) → JEDNO
+///   automatyczne ponowienie z rozpoznawaniem sieciowym (cloud, tryb systemu).
+///   O faktycznym trybie decyduje platforma; [lastSttMode] raportuje wynik.
+///   Audio może opuścić urządzenie WYŁĄCZNIE w ostatniej próbie cloud.
 ///
-/// Prywatność: całe przetwarzanie audio odbywa się NA URZĄDZENIU. Audio nigdy
-/// nie opuszcza urządzenia i nie jest przechowywane. Do LLM Gateway trafia
-/// wyłącznie tekst (ten sam, który użytkownik mógłby wpisać ręcznie).
+/// TTS (R-TTS): przed syntezą [speak] usuwa formatowanie Markdown, aby TTS
+/// nie odczytywał znaczników (**, -, #, 1.) jako części wypowiedzi.
+/// Docelowa architektura displayContent/ttsContent — przyszły etap (parked).
+///
+/// Język (R2): STT i TTS używają JĘZYKA ROZMOWY ustawionego przez użytkownika
+/// (setConversationLanguage), niezależnego od języka systemu/roamingu/UI.
 class VoiceService implements IVoiceService {
   final stt.SpeechToText _speech = stt.SpeechToText();
   final FlutterTts _tts = FlutterTts();
@@ -23,10 +30,15 @@ class VoiceService implements IVoiceService {
   bool _ttsInitialized = false;
   bool _ttsSpeaking = false;
   String? _sttLocaleId;
+  String _ttsLocaleId = 'en-US';
+  SttMode _lastSttMode = SttMode.none;
 
-  /// Ustawia język rozpoznawania STT (ISO-639, np. 'pl-PL').
-  void setSttLocale(String localeId) {
-    _sttLocaleId = localeId;
+  /// Ustawia język rozmowy dla STT i TTS (R2). Brak zmiany → nadal działa
+  /// poprzedni język aż do ponownego transcribe/speak.
+  @override
+  void setConversationLanguage(ConversationLanguage language) {
+    _sttLocaleId = language.ttsLocaleId;
+    _ttsLocaleId = language.ttsLocaleId;
   }
 
   /// Web nie wspiera SpeechRecognizer ani systemowego TTS — bezpieczna
@@ -39,6 +51,9 @@ class VoiceService implements IVoiceService {
 
   @override
   bool get isSpeaking => _ttsSpeaking;
+
+  @override
+  SttMode get lastSttMode => _lastSttMode;
 
   @override
   Future<bool> initStt() async {
@@ -54,8 +69,7 @@ class VoiceService implements IVoiceService {
   Future<bool> initTts() async {
     if (_ttsInitialized) return true;
     if (!isTtsSupported) return false;
-    // Głos odpowiada bieżącemu językowi aplikacji; fallback en-US.
-    final ok = await _configureTtsLanguage('pl-PL');
+    final ok = await _configureTtsLanguage(_ttsLocaleId);
     _ttsInitialized = true;
     _tts.setCompletionHandler(() => _ttsSpeaking = false);
     _tts.setCancelHandler(() => _ttsSpeaking = false);
@@ -77,8 +91,13 @@ class VoiceService implements IVoiceService {
     }
   }
 
-  @override
-  Future<String> transcribe({int timeoutSeconds = 8}) async {
+  /// Pojedyncza próba nasłuchiwania w podanym trybie (on-device / cloud).
+  /// Zwraca transkrypcję (pusty String = brak wyniku). Rzuca wyjątek tylko
+  /// przy twardym błędzie nasłuchiwania (np. brak zgody na mikrofon).
+  Future<String> _listenOnce({
+    required bool onDevice,
+    required int timeoutSeconds,
+  }) async {
     if (!isSttSupported) return '';
     if (!_sttInitialized) {
       final ok = await initStt();
@@ -93,7 +112,7 @@ class VoiceService implements IVoiceService {
         listenFor: Duration(seconds: timeoutSeconds),
         pauseFor: const Duration(seconds: 3),
         localeId: _sttLocaleId,
-        onDevice: false,
+        onDevice: onDevice,
         partialResults: true,
         cancelOnError: true,
       ),
@@ -122,10 +141,63 @@ class VoiceService implements IVoiceService {
   }
 
   @override
+  Future<String> transcribe({int timeoutSeconds = 8}) async {
+    // R1-C: HYBRYDA — najpierw on-device (audio nie opuszcza urządzenia).
+    String result = '';
+    try {
+      result = await _listenOnce(onDevice: true, timeoutSeconds: timeoutSeconds);
+    } catch (_) {
+      result = '';
+    }
+    if (result.isNotEmpty) {
+      _lastSttMode = SttMode.onDevice;
+      return result;
+    }
+
+    // Jawny fallback do chmury systemowej (on-device niedostępne / cisza).
+    try {
+      result = await _listenOnce(onDevice: false, timeoutSeconds: timeoutSeconds);
+    } catch (_) {
+      result = '';
+    }
+    _lastSttMode = SttMode.cloud;
+    return result;
+  }
+
+  @override
   Future<void> cancelListening() async {
     if (_speech.isListening) {
       await _speech.cancel();
     }
+  }
+
+  /// Usuwa formatowanie Markdown, aby TTS nie czytał znaczników jako treści
+  /// (R-TTS). Zachowuje właściwy tekst; nie dotyka nowych linii.
+  /// Obsługuje: **bold**, *italic*, `code`, nagłówki #, listy -/1., > quote,
+  /// linki [tekst](url), ~~przekreślenie~~.
+  @visibleForTesting
+  static String stripMarkdown(String text) {
+    if (text.isEmpty) return text;
+    var t = text;
+    // Odnośniki Markdown: [tekst](url) → tekst (najpierw, by nie złamać linków).
+    t = t.replaceAllMapped(
+        RegExp(r'\[([^\]]+)\]\([^)]*\)'), (m) => m[1]!);
+    // Przekreślenie ~~x~~.
+    t = t.replaceAllMapped(RegExp(r'~~([^~]+)~~'), (m) => m[1]!);
+    // Pogrubienie i kursywa: **x** / __x__ / *x* / _x_.
+    t = t.replaceAllMapped(
+        RegExp(r'(\*\*|__)(.+?)\1'), (m) => m[2]!);
+    t = t.replaceAllMapped(RegExp(r'(\*|_)(.+?)\1'), (m) => m[2]!);
+    // Kod inline `x`.
+    t = t.replaceAllMapped(RegExp(r'`([^`]+)`'), (m) => m[1]!);
+    // Nagłówki na początku linii.
+    t = t.replaceAll(RegExp(r'^#{1,6}\s+', multiLine: true), '');
+    // Listy i cytaty na początku linii.
+    t = t.replaceAll(
+        RegExp(r'^\s*(?:[-*+]\s+|>\s+|[0-9]+\.\s+)', multiLine: true), '');
+    // Pozostałe pojedyncze gwiazdki na brzegach słów (np. separator).
+    t = t.replaceAll('*', '');
+    return t.trim();
   }
 
   @override
@@ -134,8 +206,11 @@ class VoiceService implements IVoiceService {
     if (!_ttsInitialized) {
       await initTts();
     }
+    // R-TTS: TTS czyta CZYSTY tekst — bez znaczników Markdown.
+    final clean = stripMarkdown(text);
+    if (clean.isEmpty) return false;
     _ttsSpeaking = true;
-    final result = await _tts.speak(text);
+    final result = await _tts.speak(clean);
     return result == 1;
   }
 

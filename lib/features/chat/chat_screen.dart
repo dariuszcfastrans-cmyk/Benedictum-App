@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:benedictum_mobile/l10n/app_localizations.dart';
 
+import '../../config/locale_controller.dart';
 import '../../config/routes.dart';
 import '../../core/errors/app_exceptions.dart';
 import '../../models/message.dart';
@@ -59,6 +60,16 @@ class _ChatScreenState extends State<ChatScreen> {
   // Faza rozmowy — startuje od wywiadu (intake); przejście do analyze jest
   // świadomą decyzją użytkownika. Stan lokalny, gubi się przy nawigacji.
   _ChatPhase _phase = _ChatPhase.intake;
+
+  @override
+  void initState() {
+    super.initState();
+    // R2: język rozmowy (STT+TTS) aktualizowany przy każdym wejściu do czatu —
+    // zmiana w Settings jest widoczna przy kolejnym otwarciu rozmowy.
+    _voiceService.setConversationLanguage(
+      LocaleController.instance.conversationLanguage.value,
+    );
+  }
 
   /// Buduje context wyłącznie z wypowiedzi użytkownika (sender == 'user').
   /// Każda wypowiedź jest oznaczana jako USER_STATEMENT — NIE jest faktem ani

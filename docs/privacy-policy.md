@@ -1,6 +1,6 @@
 # Polityka Prywatności — Benedictum
 
-_Ostatnia aktualizacja: 2026-08-18 (A3: voice on-device)_
+_Ostatnia aktualizacja: 2026-08-20 (VOICE HARDENING: hybryda on-device + cloud R1-C)_
 _Odpowiedzialność prawna: DCI Veridictum Lab / Dariusz Cedro_
 _Kontakt: (do uzupełnienia przez Operatora przed publikacją)_
 
@@ -31,11 +31,16 @@ wykorzystuje i chroni dane użytkowników. Aplikacja jest trenerem rozmów AI
 
 ### 2.5. Głos (voice)
 - Mikrofon jest używany wyłącznie do **głosowego wpisywania wiadomości**.
-- Rozpoznawanie mowy (STT) i synteza odpowiedzi (TTS) odbywają się **w całości
-  na urządzeniu użytkownika**. Nagrania głosowe i audio NIE są przesyłane,
-  gromadzone ani przechowywane przez aplikację ani podmioty trzecie.
-- Do serwerów trafia wyłącznie tekst transkrypcji — ten sam, który użytkownik
-  mógłby wpisać ręcznie (por. §2.2).
+- Rozpoznawanie mowy (STT) działa **hybrydowo**: w pierwszej kolejności na
+  urządzeniu użytkownika, a gdy on-device nie rozpozna mowy — z użyciem chmurowej
+  usługi rozpoznawania mowy platformy (Android RecognizerIntent / iOS SFSpeech).
+  W takim scenariuszu audio może zostać przesłane do tej usługi w celu
+  transkrypcji. Synteza odpowiedzi (TTS) odbywa się na urządzeniu.
+- Aplikacja **nie gromadzi ani nie przechowuje** nagrań głosowych ani audio
+  po transkrypcji; nie udostępnia ich podmiotom trzecim poza opisaną usługą
+  rozpoznawania mowy platformy.
+- Do serwerów aplikacji trafia wyłącznie tekst transkrypcji — ten sam, który
+  użytkownik mógłby wpisać ręcznie (por. §2.2).
 
 ## 3. Jak wykorzystujemy dane
 

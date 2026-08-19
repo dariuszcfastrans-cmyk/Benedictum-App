@@ -278,4 +278,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get chatMicEmpty =>
       'No speech recognized. Try again or type your message.';
+
+  @override
+  String get settingsConversationLanguage => 'Conversation language';
+
+  @override
+  String get settingsConversationHint =>
+      'Used for voice input and read-aloud. Independent of your device and interface language.';
 }

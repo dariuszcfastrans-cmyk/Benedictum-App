@@ -85,5 +85,7 @@
   "chatTtsStop": "Detener reproducción",
   "chatMicPermissionDenied": "Se denegó el acceso al micrófono. Aún puedes escribir tus mensajes.",
   "chatMicUnavailable": "El reconocimiento de voz no está disponible en este dispositivo. Usa la entrada de texto.",
-  "chatMicEmpty": "No se reconoció la voz. Inténtalo de nuevo o escribe el texto."
+  "chatMicEmpty": "No se reconoció la voz. Inténtalo de nuevo o escribe el texto.",
+  "settingsConversationLanguage": "Idioma de conversación",
+  "settingsConversationHint": "Se utiliza para la entrada de voz y la lectura en voz alta. Independiente del idioma del dispositivo y de la interfaz."
 }
