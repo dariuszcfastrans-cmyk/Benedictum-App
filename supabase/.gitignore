@@ -6,3 +6,6 @@
 .env.keys
 .env.local
 .env.*.local
+
+# Deno (lokalne środowisko testowe Edge Functions)
+node_modules/
