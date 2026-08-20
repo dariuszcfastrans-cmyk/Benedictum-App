@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart' show kIsWeb, visibleForTesting;
+import 'package:flutter/foundation.dart' show debugPrint, kIsWeb, visibleForTesting;
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 
@@ -61,6 +61,7 @@ class VoiceService implements IVoiceService {
     if (!isSttSupported) return false;
     _sttInitialized = await _speech.initialize(
       finalTimeout: const Duration(seconds: 10),
+      debugLogging: true,
     );
     return _sttInitialized;
   }
@@ -117,6 +118,9 @@ class VoiceService implements IVoiceService {
         cancelOnError: true,
       ),
       onResult: (result) {
+        debugPrint('[T1DART-C1] voice_service onResult final=${result.finalResult} '
+            'type=${result.resultTypeValue} words="${result.recognizedWords}" '
+            'empty=${result.recognizedWords.isEmpty} completerCompleted=${completer.isCompleted}');
         if (result.finalResult) {
           if (!completer.isCompleted) {
             completer.complete(result.recognizedWords.trim());
@@ -134,11 +138,21 @@ class VoiceService implements IVoiceService {
       Duration(seconds: timeoutSeconds + 5),
       onTimeout: () => fallback,
     );
+    debugPrint('[T1DART-C2] _listenOnce zakończone onDevice=$onDevice '
+        'result="$result" empty=$result.isEmpty completed=${completer.isCompleted} '
+        'fallback="$fallback" isListening=$_speech.isListening');
 
     if (!_speech.isListening) return result;
     await _speech.stop();
     return result;
   }
+
+  /// Minimalna liczba słów wyniku on-device akceptowana jako kompletna.
+  /// On-device (Soda) potrafi obciąć frazę do pierwszych ~3 słów i zwrócić
+  /// je jako finalResult — byłoby to mylnie traktowane jako pełny wynik.
+  /// Próg 4 słów: wyniki 1-3 słowne (typowy szum tła / obcięta fraza) są
+  /// uznawane za niekompletne i wymuszają fallback do chmury systemowej (R1-C).
+  static const int minOnDeviceWordCount = 4;
 
   @override
   Future<String> transcribe({int timeoutSeconds = 8}) async {
@@ -149,17 +163,25 @@ class VoiceService implements IVoiceService {
     } catch (_) {
       result = '';
     }
-    if (result.isNotEmpty) {
+    final onDeviceWords =
+        result.trim().isEmpty ? 0 : result.trim().split(RegExp(r'\s+')).length;
+    debugPrint('[T1DART-C3] transcribe po onDevice wynik="$result" empty=$result.isEmpty '
+        'words=$onDeviceWords minWords=$minOnDeviceWordCount');
+    if (onDeviceWords >= minOnDeviceWordCount) {
       _lastSttMode = SttMode.onDevice;
       return result;
     }
+    debugPrint('[T1DART-C3b] onDevice zbyt krótkie ($onDeviceWords < '
+        '$minOnDeviceWordCount słów) → fallback cloud');
 
-    // Jawny fallback do chmury systemowej (on-device niedostępne / cisza).
+    // Jawny fallback do chmury systemowej (on-device niedostępne / cisza /
+    // zbyt krótki wynik).
     try {
       result = await _listenOnce(onDevice: false, timeoutSeconds: timeoutSeconds);
     } catch (_) {
       result = '';
     }
+    debugPrint('[T1DART-C4] transcribe po cloud wynik="$result" empty=$result.isEmpty');
     _lastSttMode = SttMode.cloud;
     return result;
   }

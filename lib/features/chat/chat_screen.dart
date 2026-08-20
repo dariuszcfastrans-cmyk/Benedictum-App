@@ -224,12 +224,18 @@ class _ChatScreenState extends State<ChatScreen> {
     setState(() => _isListening = true);
     try {
       final transcript = await _voiceService.transcribe();
+      debugPrint('[T1DART-D1] chat_screen po transcribe transcript="$transcript" '
+          'empty=$transcript.isEmpty mounted=$mounted '
+          'inputControllerHash=$identityHashCode(_inputController) '
+          'inputCurrent="${_inputController.text}"');
       if (!mounted) return;
       if (transcript.isEmpty) {
         _showChatError(l10n.chatMicEmpty);
         return;
       }
       _inputController.text = transcript;
+      debugPrint('[T1DART-D2] chat_screen ustawiono input tekst="${_inputController.text}" '
+          'inputControllerHash=$identityHashCode(_inputController)');
       _inputController.selection = TextSelection.fromPosition(
         TextPosition(offset: transcript.length),
       );
