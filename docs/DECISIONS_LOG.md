@@ -2,6 +2,39 @@
 
 Wpisy dołączane chronologicznie. Format: identyfikator — decyzja — WHY — dowód.
 
+## T1 (2026-08-20) — STT semantyka + fallback cloud + A3.6
+
+### D-2026-08-20/33 — Korekta semantyczna pluginu `speech_to_text`: `final_result`→`finalResult`
+Decyzja: w `SpeechToTextPlugin.kt` (pub-cache 7.4.0, POZA repo) mapowanie `final_result=true`
++ niepuste `userSaid` → `ResultType.finalResult` zamiast błędnego `ResultType.intermediate`;
+pusty `onResults` → `EMPTY_PATH` (nie nadpisuje finala).
+WHY: on-device (Soda) zgłaszał finalne rozpoznanie jako `isFinal=false` — Flutter bez korekty
+traktował transkrypcję jako cząstkową i odrzucał ją w progu słów (A3.6 nie przechodził).
+Dowód: `SpeechToTextPlugin.kt:477-482`; logcat `EMIT resultType=2` + `EMPTY_PATH`
+(`/tmp/opencode/t1cf3_logcat.txt:12663,12675`); powtórka 3× (`resultType=2`, `EMPTY_PATH`).
+
+### D-2026-08-20/34 — Fallback cloud przy wyniku on-device < 4 słów (opcja 1)
+Decyzja: `minOnDeviceWordCount = 4` w `voice_service.dart:155`; wyniki on-device poniżej
+progu uznawane za niekompletne → `[T1DART-C3b]` → fallback cloud (R1-C).
+WHY: on-device potrafi obciąć frazę do ~3 słów i zwrócić je jako finalResult (fakt z przebiegów
+10:37/13:06) oraz rozpoznać sam szum tła (przebieg 16:33 `"tak słuchaj ja"`, words=3 przy progu
+3 — test FAIL). Próg 3 okazał się za niski (2. przebieg), podniesiony na 4 → PASS.
+Dowód: `voice_service.dart:155,170,174-175`; `/tmp/opencode/t1cf2_console.txt:84`;
+`/tmp/opencode/t1cf3_console.txt:202` (A3.6 PASS, keywords 4/4).
+
+### D-2026-08-20/35 — Commit T1 zgodnie z workflow (backupy zachowane)
+Decyzja: commit `6a33de0` (voice_service.dart, chat_screen.dart, e2e_voice_real_test.dart);
+korekta pluginu NIE jest częścią commita (pub-cache) — świadomie.
+WHY: decyzja Operatora („commit zgodnie z workflow, zachowując backupy"); plugin poza repo —
+do późniejszej decyzji (U-T1-02/B11).
+Dowód: `git log 6a33de0`; backupy `/tmp/opencode/t1*_backup/`.
+
+### D-2026-08-20/36 — Dowód gałęzi fallbacku cloud → OSOBNY KROK (nie otwarto)
+Decyzja: fallback cloud (`[T1DART-C3b]`→`[C4]`→`SttMode.cloud`) NIE jest testowany w T1.
+WHY: w A3.6 PASS on-device dało 8 słów — gałąź fallbacku nie została wykonana; wymaga
+osobnego KROKU dowodowego za decyzją Operatora (U-T1-01).
+Dowód: brak śladu `SttMode.cloud` w `/tmp/opencode/t1cf3_console.txt` (PASS on-device).
+
 ## KROK 8 (2026-08-18)
 
 ### D-2026-08-18/29 — Deprecacja legacy proxy: usunięcie gemini-proxy i openrouter-proxy

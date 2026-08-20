@@ -252,3 +252,23 @@ Zakres zatwierdzony przez Operatora (GO → KROK 8; płynne przejście po zamkni
 Dowód: deno unit **97 passed | 0 failed** (brama K8 3, usunięty nieaktualny test K2);
 harness llm-gateway **OK** (report C-0, chat persona, RATE_LIMITED); Flutter analyze czysty;
 Flutter **46 testów PASS**. Zob. CHECKPOINTS.md (Checkpoint 8) i DECISIONS_LOG.md.
+### T1 — STT semantyka + fallback cloud; A3.6 voice end-to-end (2026-08-20)
+
+Zakres zatwierdzony przez Operatora (GO → T1 SEMANTYKA → CONTROLLED WRITE → opcja 1).
+
+1. **Korekta semantyczna pluginu `speech_to_text` 7.4.0** (pub-cache, **POZA repo**):
+   `final_result=true` + niepuste `userSaid` → `ResultType.finalResult` (nie `intermediate`);
+   pusty `onResults` → `EMPTY_PATH` (nie nadpisuje finala).
+   `SpeechToTextPlugin.kt:477-482` (REPRODUCIBILITY RISK — B11/U-T1-02).
+2. **Fallback cloud w `VoiceService`** (hybryda R1-C): `minOnDeviceWordCount = 4`
+   (`voice_service.dart:155`) — on-device < 4 słów uznawane za niekompletne → fallback cloud.
+   Próg 4 (nie 3): przebieg 16:33 pokazał, że on-device potrafi rozpoznać szum tła jako
+   3 słowa (`/tmp/opencode/t1cf2_console.txt:84`).
+3. **A3.6 end-to-end PASS** (S23 Ultra, 16:37): keywords 4/4, `lastSttMode=onDevice`,
+   TTS full cycle; commit `6a33de0` (voice_service.dart, chat_screen.dart,
+   e2e_voice_real_test.dart).
+4. **Instrumentacja T1DART/T1KOTLIN** (debugPrint) — ślady `[T1DART-C*]`/`[T1KOTLIN]`.
+
+Dowód: logcat `EMIT resultType=2` + `EMPTY_PATH` (`/tmp/opencode/t1cf3_logcat.txt:12663,12675`);
+A3.6 PASS (`/tmp/opencode/t1cf3_console.txt:202`); analyze 0 issues; unit 7/7; build ✓.
+Szczegóły: CHECKPOINTS.md (Checkpoint 9), DECISIONS_LOG.md (T1), docs/T1_CLOSURE.md.

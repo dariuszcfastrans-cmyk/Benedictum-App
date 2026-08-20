@@ -256,7 +256,47 @@ Dowody:
 Decyzja do potwierdzenia przez Operatora:
 1. Czy KROK 8 zamykamy i przechodzimy do KROKU 9 (finalna integracja + Data Safety + submission)?
 
+## Checkpoint 9 — T1: STT semantyka (`final_result`→`finalResult`) + fallback cloud (A3.6)
+
+Data: 2026-08-20.
+Status: **CLOSED 2026-08-20** (commit `6a33de0`, A3.6 PASS end-to-end; zatwierdzony przez Operatora → commit).
+
+Zakres:
+- **Korekta semantyczna pluginu** `speech_to_text` 7.4.0 (pub-cache, POZA repo — patrz
+  REPRODUCIBILITY/B11): mapowanie `final_result=true` + niepuste `userSaid` →
+  `ResultType.finalResult` (wcześniej błędnie `ResultType.intermediate`).
+  Lokalizacja: `~/.pub-cache/hosted/pub.dev/speech_to_text-7.4.0/android/src/main/kotlin/
+  com/csdcorp/speech_to_text/SpeechToTextPlugin.kt:477-482`.
+- **Fallback cloud przy krótkim wyniku on-device**: `minOnDeviceWordCount = 4` w
+  `lib/services/voice_service.dart:155` — wyniki on-device < 4 słów uznawane za niekompletne
+  (szum/obcięta fraza) → `[T1DART-C3b]` → fallback cloud (R1-C).
+- **Instrumentacja T1DART/T1KOTLIN** (debugPrint) w `voice_service.dart`, `chat_screen.dart`
+  oraz pluginie pub-cache — ślady `[T1DART-C*]`/`[T1KOTLIN]` w logcat/konsoli.
+- **Nowy test integracyjny** `integration_test/e2e_voice_real_test.dart` (A3.6).
+
+Dowody (artefakty lokalne, poza repo):
+- `EMIT resultType=2 jsonLen=422` + 5 alternates, fraza `"mam gotowe mvp i szukam inwestora
+  kto jest"` → `/tmp/opencode/t1cf3_logcat.txt:12663`
+- `EMPTY_PATH` (pusty onResults NIE nadpisuje finala) → `/tmp/opencode/t1cf3_logcat.txt:12675`
+- `A3.6: PASS — lastSttMode=SttMode.onDevice, keywords=[gotowe, mvp, szukam, inwestora]/4,
+  intake=OK, TTS=full cycle` → `/tmp/opencode/t1cf3_console.txt:202`
+- Szum on-device 3-słowny (`"tak słuchaj ja"`, words=3) odfiltrowany przy progu 3 → przebieg
+  16:33 `/tmp/opencode/t1cf2_console.txt:84` (dowód, że próg 3 był za niski; po podniesieniu
+  na 4 test PASS).
+- `flutter analyze`: 0 issues; `flutter test` (unit voice): 7/7 PASS; build APK ✓; install Success.
+
+Commit: `6a33de0` (voice_service.dart, chat_screen.dart, e2e_voice_real_test.dart).
+
+REPRODUCIBILITY:
+- W repo: 3 pliki z commita `6a33de0`.
+- POZA repo: korekta `SpeechToTextPlugin.kt` w pub-cache (B11 / U-T1-02 — TECHNICAL DEBT);
+  reinstalacja pub-cache / `flutter clean` cofnie korektę.
+- Otwarte: U-T1-01 (fallback cloud < 4 słów NIE potwierdzony end-to-end), U-T1-03
+  (instrumentacja wcommittowana), U-T1-04 (zmienność on-device bez statystyki).
+  Szczegóły: `docs/T1_CLOSURE.md`.
+
 ## Planowane checkpointy (przyszłe)
 
-- CP9 — zewnętrzny: RevenueCat Shipaton 2026 (monitorowanie regulaminu).
-- CP10 — finalna integracja + Data Safety + submission.
+- CP10 — zewnętrzny: RevenueCat Shipaton 2026 (monitorowanie regulaminu).
+- CP11 — finalna integracja + Data Safety + submission.
+- CP12 — niezależny READ-ONLY REVIEW MiniMax M3 (po zatwierdzeniu T1 housekeeping).

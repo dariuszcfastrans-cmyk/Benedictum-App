@@ -72,9 +72,12 @@ _Dokument roboczy K9 (B3): przenieść 1:1 do formularza w konsoli._
 
 - Głosowe wprowadzanie (STT) działa **hybrydowo**: najpierw próbuje rozpoznania
   **na urządzeniu** (Android: `onDevice:true` + `isOnDeviceRecognitionAvailable`;
-  iOS: `onDevice:true`), a gdy on-device zwróci puste/nieudane rozpoznanie —
-  następuje **jawny fallback do chmury** (speech_to_text createSpeechRecognizer
-  bez `onDevice`). Tryb ostatniego rozpoznania jest raportowany (`lastSttMode`).
+  iOS: `onDevice:true`). Fallback do chmury następuje **jawnie** (speech_to_text
+  createSpeechRecognizer bez `onDevice`), gdy on-device zwróci puste/nieudane
+  rozpoznanie **lub wynik krótszy niż `minOnDeviceWordCount = 4` słowa** (T1:
+  on-device potrafi obciąć frazę do ~3 słów i podać je jako finalResult — taki
+  wynik jest traktowany jako niekompletny). Tryb ostatniego rozpoznania jest
+  raportowany (`lastSttMode`).
 - **Audio może zatem opuścić urządzenie w scenariuszu fallbacku cloud** — po
   transkrypcji nie jest przechowywane po stronie serwera przez aplikację.
   TTS (odtwarzanie odpowiedzi) działa na urządzeniu (Android TextToSpeech).
