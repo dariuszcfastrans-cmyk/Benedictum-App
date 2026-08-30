@@ -1,4 +1,4 @@
-package com.dci.benedictum.benedictum_mobile
+package com.dci.benedictum
 
 import io.flutter.embedding.android.FlutterActivity
 

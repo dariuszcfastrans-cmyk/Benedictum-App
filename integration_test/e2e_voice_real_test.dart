@@ -32,7 +32,7 @@ import 'package:benedictum_mobile/services/voice_service.dart';
 //     --dart-define=VOICE_PHRASE="Mam gotowe MVP i szukam inwestora"
 //
 // WARUNEK TESTU: android.permission.RECORD_AUDIO przyznane wcześniej
-// (`adb shell pm grant com.dci.benedictum.benedictum_mobile android.permission.RECORD_AUDIO`),
+// (`adb shell pm grant com.dci.benedictum android.permission.RECORD_AUDIO`),
 // gdyż systemowy Android permission prompt nie jest klikalny z poziomu testu.
 
 const String kSupabaseUrl = String.fromEnvironment('SUPABASE_URL');
