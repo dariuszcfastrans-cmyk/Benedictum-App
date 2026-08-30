@@ -70,6 +70,7 @@ export const openrouterAdapter: LlmAdapter = {
         max_tokens: task.maxTokens,
         reasoning: { enabled: false },
         user: task.userId,
+        provider: { data_collection: "deny" },
       },
     };
   },

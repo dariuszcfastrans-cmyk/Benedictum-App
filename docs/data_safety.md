@@ -65,8 +65,8 @@ _Dokument roboczy K9 (B3): przenieść 1:1 do formularza w konsoli._
 
 1. Wkleić realny URL polityki (po publikacji GitHub/strony — decyzja D6).
 2. Uzupełnić kontakt e-mail w docs/privacy-policy.md (§7).
-3. Jeśli decyzja D7 → płatny model: zaktualizować opis dostawców, bo zmienia się
-   praktyka treningu (free endpoints = trening domyślnie ON).
+3. D7 podjęta: model FREE (`nvidia/nemotron-3-ultra-550b-a55b:free`) → free endpoints = trening domyślnie ON → deklaracja w formularzu: training: NIE wykluczone, data_collection: deny (OpenRouter routing).
+4. OpenRouter `provider: { data_collection: "deny" }` — wykluczenie dostawców mogących trenować na danych (per-request + account-wide w ustawieniach prywatności).
 
 ## Voice (A3.2/A3.3) — hybryda on-device + cloud (R1-C, VOICE HARDENING)
 

@@ -118,12 +118,14 @@ Deno.test("openrouter: buildRequest report — parity payloadu", () => {
     max_tokens: number;
     reasoning: { enabled: boolean };
     user?: string;
+    provider: { data_collection: string };
   };
   assertEquals(body.model, "openrouter/free");
   assertEquals(body.temperature, 0.4);
   assertEquals(body.max_tokens, 800);
   assertEquals(body.reasoning, { enabled: false });
   assertEquals(body.user, "u-test-1");
+  assertEquals(body.provider, { data_collection: "deny" });
   assertEquals(body.messages[0].role, "system");
   assertEquals(body.messages[1], { role: "user", content: "Wygeneruj raport końcowy sesji." });
 });
