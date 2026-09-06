@@ -42,6 +42,13 @@ app.*.symbols
 *.keystore
 /android/key.properties
 
+# Supabase CLI / local linked project (never publish)
+supabase/.temp/
+**/start-secrets/
+
+# Vendor SDK machine paths (do not re-add)
+vendor/**/local.properties
+
 # Obfuscation related
 app.*.map.json
 
