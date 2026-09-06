@@ -85,7 +85,7 @@ Do not turn temporary project state into a permanent rule.
 ## Validation
 Use only commands supported by the repository. Mark anything not run as unverified.
 
-### Verified repo commands
+### Primary repo validation commands
 - `flutter pub get`
 - `flutter analyze`
 - `flutter test`
