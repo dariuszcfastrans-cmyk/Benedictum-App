@@ -23,6 +23,12 @@ From the product ledger — **not implemented as the main loop yet**:
 - Difficulty as believable counterpart behaviour, not “always attack”
 - Train through consequences (action → reaction → adapt)
 
+## Contest / store (intent)
+
+Shipaton 2026 is a milestone, not the product’s end date. If a contest category is filed, **Career Coaching** is the intended fit (founder pitch practice). That filing is **not** claimed as done here.
+
+Still needed for a store/contest pack (not in this tree as submitted artifacts): listing URL, 1024 icon, device screenshots, ≤2 min demo from a physical device, privacy contact, Data Safety form.
+
 ## Next engineering
 
 - Server-side entitlement (paywall is client-side today)

@@ -5,6 +5,10 @@ Product-facing history. Engineering logs live in `docs/ARC.md` and
 
 Dates are commit dates on `master`.
 
+## Unreleased
+
+- Public docs: practice loop as the product; web paywall honesty; no EU/US-only processing claim.
+
 ## 2026-08-30
 
 - Data Safety: free-tier model routing with `data_collection: deny` (OpenRouter).

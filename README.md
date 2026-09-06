@@ -8,7 +8,7 @@ Not a chatbot with three skins. Three roles, one session, a structured report.
 
 Built as a product (Flutter + Supabase), not as a notebook dump.
 
-Made by **Dariusz Cedro / DCI Veridictum Lab** with a multi-model Hive Mind under human `KROK → DOWÓD → STOP` decisions. Review the **app**, not the laboratory.
+Made by **Dariusz Cedro / DCI Veridictum Lab** with a multi-model Hive Mind under human `KROK → DOWÓD → STOP` decisions. The product is a board of voices; the lab that built it is too. Review the **app**, not the laboratory.
 
 [Demo (90s)](docs/public/DEMO.md) · [Limitations](docs/public/LIMITATIONS.md) · [Architecture](docs/public/ARCHITECTURE.md) · [Roadmap](docs/public/ROADMAP.md) · [Privacy](docs/public/PRIVACY.md) · [Security](SECURITY.md) · [Changelog](CHANGELOG.md)
 
@@ -16,7 +16,7 @@ Made by **Dariusz Cedro / DCI Veridictum Lab** with a multi-model Hive Mind unde
 
 ## Who it is for
 
-People who must defend an idea out loud — founders first. The shipped MVP is one room: **an investor pitch**.
+People who must defend an idea out loud — founders first, in a **career-coaching** sense: practice the room before the real one. The shipped MVP is one room: **an investor pitch**.
 
 The longer idea (salary talks, clients, adaptive difficulty) is on the [roadmap](docs/public/ROADMAP.md). It is **not** in this build.
 
@@ -35,6 +35,8 @@ Benedictum puts a small board in the room:
 **MVP scenario:** *Pitch to an Investor* only.
 
 ## What you can do today
+
+**Practice loop** (this is the product, not a chatbot tour):
 
 1. Sign in.
 2. Intake with the Coach (type or speak).

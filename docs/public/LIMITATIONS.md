@@ -11,7 +11,7 @@ Honest list. Nothing here is hidden in the README.
 ## Billing & access
 
 - RevenueCat paywall is **client-side** in this MVP. A determined client can call authenticated APIs without a Pro entitlement. Server-side entitlement is planned, not shipped.
-- Web builds do not initialize RevenueCat / OneSignal (native SDKs).
+- Web builds do not initialize RevenueCat / OneSignal (native SDKs). On web the client treats Pro as unlocked. That is a **known MVP demo choice**, not a store product.
 
 ## Backend
 

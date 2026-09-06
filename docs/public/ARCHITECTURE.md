@@ -23,6 +23,7 @@ Flutter app
 | Adapter | `_shared/adapters/gemini.ts`, `openrouter.ts` | New vendor = new adapter + registry entry |
 | Prompts | `_shared/prompts` | Product IP; not shipped in the Flutter client |
 | Persistence | `session-proxy` | Independent of which model answered |
+| Voice STT plugin | vendored `vendor/speech_to_text` | On-device result semantics stay in-repo (not a pub-cache patch) |
 
 ## What is deliberately unfinished
 
@@ -35,6 +36,7 @@ On `master` HEAD the registered adapters are Gemini and OpenRouter. Adding a ven
 - JWT verified by the platform before function code.
 - User id from `sub`; session rows are owned by that id.
 - Report body is parsed against a JSON contract before it is stored.
-- A technically successful HTTP 200 that fails the contract is not treated as a good answer.
+- A technically successful HTTP 200 that fails the contract is not treated as a good answer (engine may try the next eligible track).
+- Incomplete LLM configuration fails fast (`NOT_CONFIGURED`) instead of inventing a default model.
 
 Longer narrative: `docs/ARC.md` (engineering log, Polish).

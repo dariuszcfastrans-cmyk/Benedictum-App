@@ -26,7 +26,7 @@ Lab funding (not a privacy inbox): [Patronite — DCI Veridictum Lab](https://ww
 
 Supabase · OpenRouter and upstream model hosts · RevenueCat · Google Play · OneSignal · (voice fallback) OS speech services.
 
-Free-tier model routing is configured with OpenRouter `data_collection: deny` where that control exists. **Free endpoints are not a guarantee that no provider ever trains.** See `docs/data_safety.md` for the store-form wording.
+Free-tier model routing is configured with OpenRouter `data_collection: deny` where that control exists. **Free endpoints are not a guarantee that no provider ever trains.** We do **not** claim EU-only or US-only processing: aggregator routing can involve multiple upstream hosts. See `docs/data_safety.md` for the store-form wording.
 
 ## User controls
 
