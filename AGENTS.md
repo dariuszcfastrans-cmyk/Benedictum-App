@@ -32,6 +32,8 @@ Before changing anything, establish:
 - current project state,
 - validation requirements.
 
+Work in one agreed step at a time. After each completed step: report results, exchange context, decide the next step, or stop.
+
 ## Source hierarchy
 1. **Repository code and checked-in config** — current technical truth
 2. **Repo docs** — context and expected behavior
@@ -47,6 +49,13 @@ When reporting findings, distinguish:
 - **UNKNOWN** — insufficient evidence
 
 Never present a hypothesis as a fact.
+
+## Work modes
+- **READ-ONLY**: inspect code/docs/config/history, run safe diagnostics, prepare analysis; do not edit files, change Git state, commit, or run cleanup/restore operations.
+- **TEST-ONLY**: modify only agreed test files or test fixtures; do not change production code or public contracts without separate approval.
+- **WRITE**: change only the approved scope and required files; any unplanned scope expansion requires stopping and surfacing it.
+
+Controlled work is evidence-based, not blindly “fewest files possible”. Prefer the smallest justified scope, but solve the approved problem completely.
 
 ## Decision and state recovery
 Read these before major changes:
@@ -82,6 +91,19 @@ Do not turn temporary project state into a permanent rule.
 - Do not claim success without evidence from code, tests, or command output.
 - Keep docs and code aligned when behavior changes.
 
+## Emergency stop
+Stop immediately and ask for guidance if you hit:
+- an unplanned modification,
+- scope breach,
+- possible data loss,
+- a protected-area change,
+- unexpected repo state,
+- cross-module impact you cannot bound,
+- results that contradict the step assumptions,
+- any situation that would require guessing.
+
+Do not self-repair with reset/restore/checkout/clean/amend or similar recovery actions without explicit approval. Preserve the evidence state and report what happened, confirmed impact, completed actions, and safe next options.
+
 ## Validation
 Use only commands supported by the repository. Mark anything not run as unverified.
 
@@ -115,3 +137,11 @@ Stop and ask for clarification if:
 - a decision appears already made but cannot be confidently reconstructed,
 - validation depends on missing credentials, services, or hardware,
 - the task would require guessing hidden architecture, policy, or product intent.
+
+## Reporting
+At the end of a step, report at least:
+- what was done,
+- which files or areas were touched,
+- validation results actually obtained,
+- current repo/environment state,
+- deviations, incidents, remaining risks, and whether the step completion criterion was met.
