@@ -115,7 +115,7 @@ The lab’s research engine lives separately: [DCI-Librarian-Core](https://githu
 
 If you believe in the vision of DCI Veridictum Lab, you can support the work here:
 
-[Patronite — DCI Veridictum Lab](https://www.patreon.com/DCI_Veridictum_Lab)
+[Patreon — DCI Veridictum Lab](https://www.patreon.com/DCI_Veridictum_Lab)
 
 Support does **not** buy a store listing, private keys, or a security SLA. Vulnerabilities: [SECURITY.md](SECURITY.md).
 
